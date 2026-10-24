@@ -1,0 +1,6 @@
+/* 904 일정 공유 · 보기 전용 */
+.tabs{display:none!important}
+#sFull,#shAdd,.cp-ext,[data-sdel]{display:none!important}
+.banner.vbanner{background:var(--surface,#f5f5f5);color:var(--muted,#666);font-size:12px;text-align:center}
+[data-sadd],#sNewBtn,.s-b>p.hint,.pc-d em.add,.cp-ext,#cwPop .hint{display:none!important}
+.s-b input:disabled{background:transparent;border-color:transparent;color:var(--ink,#111);padding-left:0}
