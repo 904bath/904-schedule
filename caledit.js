@@ -178,7 +178,7 @@ function todayBoxHTML(){
 }
 // 앱을 열 때(그리고 '오늘' 버튼) 팝업으로 먼저 띄우고, 닫으면 달력
 function showTodayPop(){ closeTodayPop(); const w = document.createElement("div"); w.id = "tdPop";
-  w.innerHTML = `<div class="td-scrim" data-tdclose></div><div class="td-card">${todayBoxHTML().replace('<div class="tb-h">', '<div class="tb-h"><button type="button" class="td-x" data-tdclose aria-label="닫기">✕</button>')}<button type="button" class="btn td-ok" data-tdclose>닫고 달력 보기</button>${S.canWrite && S.mcp ? `<button type="button" class="btn ghost td-share" data-sharecal style="margin:6px 12px 0;height:40px;flex:none">📅 일정 공유 홈페이지 지금 갱신</button>` : ""}</div>`;
+  w.innerHTML = `<div class="td-scrim" data-tdclose></div><div class="td-card">${todayBoxHTML().replace('<div class="tb-h">', '<div class="tb-h"><button type="button" class="td-x" data-tdclose aria-label="닫기">✕</button>')}<button type="button" class="btn td-ok" data-tdclose>닫고 달력 보기</button></div>`;
   document.body.appendChild(w); }
 function closeTodayPop(){ $("#tdPop")?.remove(); }
 document.addEventListener("click", ev => {
@@ -186,10 +186,3 @@ document.addEventListener("click", ev => {
   const t = ev.target.closest("[data-tbev]"); if (!t) return; ev.preventDefault(); ev.stopPropagation(); closeTodayPop(); openSite(t.dataset.tbev); }, true);
 document.addEventListener("keydown", ev => { if (ev.key === "Escape") closeTodayPop(); });
 $("#todayBtn")?.addEventListener("click", () => setTimeout(showTodayPop, 50));
-// 일정 공유 홈페이지(904bath.github.io/904-schedule) 지금 갱신 · 평소엔 저녁 8시·새벽 5시쯤 자동
-const SHARECAL_TRIGGER = "trig_01A3qaoDkRmm98o3RrWFcr2W";
-document.addEventListener("click", async ev => { const b = ev.target.closest("[data-sharecal]"); if (!b) return; ev.preventDefault(); ev.stopPropagation();
-  if (!S.mcp){ toast("이 화면에서는 갱신할 수 없어요"); return; } b.disabled = true;
-  try { await S.mcp.callTool("Claude Code Remote", "fire_trigger", {trigger_id: SHARECAL_TRIGGER, text: "앱에서 '일정 공유 홈페이지 지금 갱신'을 눌렀어요. 평소대로 갱신하세요."}, {cache: false}); toast("일정 공유 갱신 시작 · 몇 분 뒤 홈페이지에 반영돼요"); }
-  catch(e){ toast(e?.code === "not_granted" || e?.code === "server_not_connected" ? "Claude Code Remote 연결을 허용해야 쓸 수 있어요" : "갱신하지 못했어요. 잠시 뒤 다시 눌러 주세요"); }
-  finally { b.disabled = false; } }, true);
