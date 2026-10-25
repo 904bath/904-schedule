@@ -9,6 +9,10 @@ const SP_METHOD = {bath: ["압착", "드라이", "에폭시", "본드"], kitchen
 const SP_BASE = ["덧방", "철거 후 시공"];
 const SP_PART = {bath: ["젠다이", "조적 파티션", "폼세라믹 파티션", "유리 파티션", "욕조", "샤워부스"], kitchen: [], entry: [], veranda: [], floor: []};
 const SP_EXTRA = {bath: ["졸리컷"], kitchen: ["졸리컷"], entry: ["걸레받이"], veranda: ["걸레받이"], floor: ["걸레받이"]};
+// 현장사진 업로드 (구글 드라이브 「904 현장사진 / 현장명 / 날짜」로 자동 정리)
+const PHOTO_APP = "https://script.google.com/macros/s/AKfycbzVtr4vfcxwIGGOvoTbra4KuxkfQoHkoJrgDClQit4E_iqRiNy59-X6bSN0ovCG4jkQ/exec";
+function photoUrl(e){ const d = new Date(), p = n => String(n).padStart(2, "0"), t = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  return `${PHOTO_APP}?site=${encodeURIComponent((e.title || "").trim())}&date=${t}`; }
 function openSite(id){
   const e0 = S.events.get(id); if (!e0) return;
   const e = structuredClone(e0); e.spaces = Array.isArray(e.spaces) ? e.spaces : [];
@@ -22,6 +26,7 @@ function renderSite(){
   const opt = (attr, on, l) => `<button type="button" class="opt sm" ${attr} aria-pressed="${on}" ${ro}>${on ? "✓ " : ""}${esc(l)}</button>`;
   let h = `<div class="dl-h"><button class="lnk" id="sClose">닫기</button><b>현장 정보</b><button type="button" class="lnk" id="sFull">전체 수정 ›</button></div><div class="dl-b s-b">
     <div class="u-site"><span class="u-dot c-${COLORS.includes(e.color) ? e.color : "purple"}"></span><b>${esc(e.title || "")}</b><small class="hint">${md(e.start)}${evEnd(e) !== e.start ? "–" + md(evEnd(e)) : ""}</small></div>
+    <a class="pill reqlink s-photo" href="${photoUrl(e)}" target="_blank" rel="noopener" style="display:flex;justify-content:center;gap:6px;margin:8px 0 10px;padding:11px 12px;font-weight:700;text-decoration:none">📷 현장사진 올리기 ↗</a>
     <div class="seg s-tent"><button type="button" data-stent="0" aria-pressed="${!e.tent}" ${ro}>확정</button><button type="button" data-stent="1" aria-pressed="${!!e.tent}" ${ro}>예정 (아직 확정 아님)</button></div>
     <div class="s-row"><label>주소<input id="sAddr" value="${esc(e.addr || "")}" placeholder="주소" ${ro}></label><label>비번<input id="sPw" value="${esc(e.pw || "")}" placeholder="공동현관 · 세대" ${ro}></label></div>`;
   // 공정 내용
