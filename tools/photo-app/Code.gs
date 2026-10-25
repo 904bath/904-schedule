@@ -187,6 +187,29 @@ function siteFolder_(site) {
   return it.hasNext() ? it.next() : null;
 }
 
+// 현장 목록 (최근에 사진 올라온 현장부터) — 미분류는 개수만
+function listSites() {
+  const root = getRoot_(), out = [];
+  let inbox = 0;
+  const it = root.getFolders();
+  while (it.hasNext()) {
+    const f = it.next(), name = f.getName();
+    if (name === INBOX_NAME) { const fi = f.getFiles(); while (fi.hasNext()) { fi.next(); inbox++; } continue; }
+    let n = 0, last = '', cover = '', coverV = false;
+    const di = f.getFolders();
+    while (di.hasNext()) {
+      const d = di.next(), day = d.getName(), fi = d.getFiles();
+      let first = null, c = 0;
+      while (fi.hasNext()) { const x = fi.next(); if (/^(image|video)\//.test(x.getMimeType())) { c++; if (!first || /^image/.test(x.getMimeType()) && !/^image/.test(first.getMimeType())) first = x; } }
+      n += c;
+      if (c && day > last) { last = day; cover = first.getId(); coverV = /^video/.test(first.getMimeType()); }
+    }
+    if (n) out.push({site: name, n, last, cover, coverV});
+  }
+  out.sort((a, b) => a.last < b.last ? 1 : a.last > b.last ? -1 : a.site.localeCompare(b.site, 'ko'));
+  return {sites: out, inbox};
+}
+
 // 날짜 폴더별 사진 목록 (최근 날짜부터)
 function listPhotos(site) {
   const f = siteFolder_(site);

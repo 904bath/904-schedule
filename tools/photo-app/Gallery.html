@@ -21,6 +21,16 @@
   .grid .pl { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:30px; text-shadow:0 1px 6px rgba(0,0,0,.6); pointer-events:none; }
   #lb video { max-width:100%; max-height:100%; }
   .empty { text-align:center; color:var(--mute); padding:40px 0; line-height:1.6; }
+  .back { display:inline-block; font-size:14px; font-weight:600; color:var(--accent); text-decoration:none; margin:0 0 6px; }
+  .q { width:100%; font-size:16px; padding:12px; border:1px solid var(--line); border-radius:10px; background:#fff; margin:0 0 12px; }
+  .sites { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+  .sc { display:block; text-decoration:none; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .sc .im { position:relative; aspect-ratio:4/3; background:#e8e4dc; }
+  .sc .im img { width:100%; height:100%; object-fit:cover; display:block; }
+  .sc .tx { padding:8px 10px 10px; }
+  .sc b { display:block; font-size:14px; line-height:1.3; word-break:keep-all; }
+  .sc small { color:var(--mute); font-size:12px; }
+  .inb { font-size:13px; color:var(--mute); background:var(--card); border:1px dashed var(--line); border-radius:10px; padding:10px 12px; margin:0 0 12px; }
   #lb { position:fixed; inset:0; background:rgba(0,0,0,.92); display:none; align-items:center; justify-content:center; z-index:9; }
   #lb.on { display:flex; }
   #lb img { max-width:100%; max-height:100%; }
@@ -31,6 +41,7 @@
 <body>
 <div class="wrap">
   <div class="brand">90.4 BATH INTERIOR DESIGN</div>
+  <a class="back" id="back" href="#" hidden>‹ 현장 목록</a>
   <h1 id="ttl">현장사진</h1>
   <p class="sub" id="sub">불러오는 중…</p>
   <a class="up" id="up" href="#">📷 이 현장에 사진 올리기</a>
@@ -44,10 +55,29 @@
   var $ = function (id) { return document.getElementById(id); };
   $('ttl').textContent = SITE || '현장사진';
   $('up').href = APP + '?site=' + encodeURIComponent(SITE);
+  $('back').href = APP + '?view=photos'; $('back').hidden = !SITE;
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function run(fn) { var a = [].slice.call(arguments, 1); return new Promise(function (ok, no) { var r = google.script.run.withSuccessHandler(ok).withFailureHandler(no); r[fn].apply(r, a); }); }
 
-  if (!SITE) { $('sub').textContent = ''; $('list').innerHTML = '<div class="empty">현장 이름이 없어요.<br>캘린더에서 현장을 눌러 「사진 보기」로 들어와 주세요.</div>'; }
+  if (!SITE) {
+    // 현장 목록 — 최근에 사진 올라온 현장부터
+    $('ttl').textContent = '현장사진'; $('up').href = APP; $('up').textContent = '📷 사진·동영상 올리기';
+    run('listSites').then(function (r) {
+      var ss = r.sites || [];
+      $('sub').textContent = ss.length ? '현장 ' + ss.length + '곳 · 최근 순' : '';
+      var h = (r.inbox ? '<div class="inb">미분류 ' + r.inbox + '개 — 밤 10시쯤 현장별로 정리돼요</div>' : '') +
+        (ss.length > 6 ? '<input class="q" id="q" type="search" placeholder="현장 이름으로 찾기">' : '');
+      if (!ss.length) { $('list').innerHTML = h + '<div class="empty">아직 올라온 사진이 없어요.</div>'; return; }
+      h += '<div class="sites" id="sites">' + ss.map(function (x) {
+        var md = x.last ? x.last.slice(5).replace('-', '/') : '';
+        return '<a class="sc" data-n="' + esc(x.site) + '" href="' + esc(APP + '?view=photos&site=' + encodeURIComponent(x.site)) + '"><div class="im">' +
+          (x.cover ? '<img alt="" data-src="' + esc(x.cover) + '">' : '') + '</div><div class="tx"><b>' + esc(x.site) + '</b><small>' + x.n + '개 · 최근 ' + md + '</small></div></a>';
+      }).join('') + '</div>';
+      $('list').innerHTML = h;
+      var q = $('q'); if (q) q.addEventListener('input', function () { var v = q.value.trim(); document.querySelectorAll('.sc').forEach(function (a) { a.hidden = v && a.dataset.n.indexOf(v) < 0; }); });
+      lazy();
+    }).catch(function () { $('sub').textContent = '목록을 불러오지 못했어요. 새로고침해 주세요.'; });
+  }
   else run('listPhotos', SITE).then(function (days) {
     var n = days.reduce(function (s, d) { return s + d.files.length; }, 0);
     $('sub').textContent = n ? '사진·동영상 ' + n + '개 · 날짜별' : '';
