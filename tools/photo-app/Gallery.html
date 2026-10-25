@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root { --bg:#f4f2ee; --card:#fff; --ink:#1d1d1f; --mute:#77736b; --line:#e2ddd4; --accent:#1f4e5f; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif; }
+  .wrap { max-width:720px; margin:0 auto; padding:20px 16px 40px; }
+  .brand { font-size:11px; letter-spacing:.18em; color:var(--mute); font-weight:600; }
+  h1 { font-size:22px; margin:6px 0 4px; }
+  .sub { font-size:13px; color:var(--mute); margin:0 0 14px; }
+  .up { display:block; text-align:center; text-decoration:none; font-weight:700; color:#fff; background:var(--accent); border-radius:12px; padding:13px; margin:0 0 18px; }
+  h2 { font-size:15px; margin:18px 0 8px; display:flex; justify-content:space-between; }
+  h2 small { color:var(--mute); font-weight:500; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:6px; }
+  .grid button { padding:0; border:0; background:#e8e4dc; border-radius:8px; aspect-ratio:1; overflow:hidden; cursor:pointer; }
+  .grid img { width:100%; height:100%; object-fit:cover; display:block; }
+  .grid button { position:relative; }
+  .grid .pl { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:30px; text-shadow:0 1px 6px rgba(0,0,0,.6); pointer-events:none; }
+  #lb video { max-width:100%; max-height:100%; }
+  .empty { text-align:center; color:var(--mute); padding:40px 0; line-height:1.6; }
+  #lb { position:fixed; inset:0; background:rgba(0,0,0,.92); display:none; align-items:center; justify-content:center; z-index:9; }
+  #lb.on { display:flex; }
+  #lb img { max-width:100%; max-height:100%; }
+  #lb .x { position:absolute; top:12px; right:16px; color:#fff; font-size:28px; background:none; border:0; }
+  #lb .msg { position:absolute; color:#fff; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">90.4 BATH INTERIOR DESIGN</div>
+  <h1 id="ttl">현장사진</h1>
+  <p class="sub" id="sub">불러오는 중…</p>
+  <a class="up" id="up" href="#">📷 이 현장에 사진 올리기</a>
+  <div id="list"></div>
+</div>
+<div id="lb"><button class="x" id="lbx" aria-label="닫기">✕</button><span class="msg" id="lbm"></span><img id="lbi" alt=""></div>
+
+<script>
+  var SITE = <?!= JSON.stringify(site) ?>;
+  var APP = <?!= JSON.stringify(ScriptApp.getService().getUrl()) ?>;
+  var $ = function (id) { return document.getElementById(id); };
+  $('ttl').textContent = SITE || '현장사진';
+  $('up').href = APP + '?site=' + encodeURIComponent(SITE);
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function run(fn) { var a = [].slice.call(arguments, 1); return new Promise(function (ok, no) { var r = google.script.run.withSuccessHandler(ok).withFailureHandler(no); r[fn].apply(r, a); }); }
+
+  if (!SITE) { $('sub').textContent = ''; $('list').innerHTML = '<div class="empty">현장 이름이 없어요.<br>캘린더에서 현장을 눌러 「사진 보기」로 들어와 주세요.</div>'; }
+  else run('listPhotos', SITE).then(function (days) {
+    var n = days.reduce(function (s, d) { return s + d.files.length; }, 0);
+    $('sub').textContent = n ? '사진·동영상 ' + n + '개 · 날짜별' : '';
+    if (!n) { $('list').innerHTML = '<div class="empty">아직 올라온 사진이 없어요.<br>미분류로 올린 사진은 밤에 정리되면 여기 보여요.</div>'; return; }
+    $('list').innerHTML = days.map(function (d) {
+      return '<h2>' + esc(d.day) + ' <small>' + d.files.length + '장</small></h2><div class="grid">' +
+        d.files.map(function (f) { return '<button type="button" data-id="' + esc(f.id) + '"' + (f.v ? ' data-v="1"' : '') + '><img alt="" data-src="' + esc(f.id) + '">' + (f.v ? '<span class="pl">▶</span>' : '') + '</button>'; }).join('') + '</div>';
+    }).join('');
+    lazy();
+  }).catch(function () { $('sub').textContent = '사진을 불러오지 못했어요. 새로고침해 주세요.'; });
+
+  // 화면에 보이는 것부터 작은 사진으로 불러옴
+  var queue = [], busy = 0;
+  function lazy() {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); queue.push(e.target); pump(); } }); }, {rootMargin: '300px'});
+    document.querySelectorAll('img[data-src]').forEach(function (i) { io.observe(i); });
+  }
+  function pump() {
+    while (busy < 4 && queue.length) {
+      var img = queue.shift(); busy++;
+      (function (img) { run('getPhoto', img.dataset.src, true).then(function (r) { if (r && r.b64) img.src = 'data:' + r.type + ';base64,' + r.b64; })
+        .catch(function () {}).then(function () { busy--; pump(); }); })(img);
+    }
+  }
+
+  // 누르면 크게
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('.grid button'); if (!b) return;
+    $('lbi').src = b.querySelector('img').src || ''; $('lbi').style.display = ''; $('lbm').textContent = b.dataset.v ? '동영상 불러오는 중…' : '크게 불러오는 중…'; $('lb').classList.add('on');
+    run('getPhoto', b.dataset.id, false).then(function (r) {
+      if (r.big) { $('lbm').textContent = '동영상이 커서 여기서는 못 틀어요 (사장님 드라이브에서 볼 수 있어요)'; return; }
+      if (/^video\//.test(r.type)) { var v = document.createElement('video'); v.controls = true; v.autoplay = true; v.playsInline = true; v.src = 'data:' + r.type + ';base64,' + r.b64; $('lbi').style.display = 'none'; $('lb').appendChild(v); }
+      else $('lbi').src = 'data:' + r.type + ';base64,' + r.b64;
+      $('lbm').textContent = ''; })
+      .catch(function () { $('lbm').textContent = '못 불러왔어요'; });
+  });
+  $('lbx').addEventListener('click', function (e) { e.stopPropagation(); $('lb').classList.remove('on'); $('lbi').src = ''; $('lbi').style.display = ''; var v = $('lb').querySelector('video'); if (v) v.remove(); });
+  $('lb').addEventListener('click', function (e) { if (e.target === $('lb')) $('lbx').click(); });
+</script>
+</body>
+</html>
