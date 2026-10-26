@@ -37,6 +37,13 @@ function doGet(e) {
   if (p.view === 'photos') {
     const g = HtmlService.createTemplateFromFile('Gallery');
     g.site = p.site ? clean_(p.site) : '';
+    let data = null, pre = {};
+    try {
+      data = g.site ? listPhotos(g.site) : listSites();
+      const ids = g.site ? [].concat.apply([], data.map(d => d.files.map(f => f.id))) : data.sites.map(x => x.cover).filter(Boolean);
+      pre = cachedThumbs_(ids.slice(0, 24));
+    } catch (err) {}
+    g.data = data; g.pre = pre;
     return g.evaluate()
       .setTitle('904 현장사진 보기')
       .addMetaTag('viewport', 'width=device-width, initial-scale=1')
@@ -78,6 +85,8 @@ function upload(site, date, who, name, mime, b64, meta) {
   const info = {taken: takenOk ? taken.toISOString() : '', up: new Date().toISOString()};
   if (isFinite(meta.lat) && isFinite(meta.lng)) { info.lat = +meta.lat; info.lng = +meta.lng; }
   f.setDescription(JSON.stringify(info));
+  if (meta.thumb && meta.thumb.length < 90000) { try { C_().put('th:' + f.getId(), JSON.stringify({type: 'image/jpeg', b64: meta.thumb}), 21600); } catch (e) {} }
+  bump_();
   return { ok: true, inbox: !hasSite };
 }
 
@@ -164,6 +173,7 @@ function sortInbox() {
     ].join('\n');
     MailApp.sendEmail(Session.getEffectiveUser().getEmail(), '[904] 미분류 현장사진 ' + left.length + '장', body);
   }
+  if (Object.keys(moved).length) bump_();
   return JSON.stringify({moved, left: left.length});
 }
 
@@ -188,7 +198,8 @@ function siteFolder_(site) {
 }
 
 // 현장 목록 (최근에 사진 올라온 현장부터) — 미분류는 개수만
-function listSites() {
+function listSites() { return cached_('ls', listSites_); }
+function listSites_() {
   const root = getRoot_(), out = [];
   let inbox = 0;
   const it = root.getFolders();
@@ -207,11 +218,13 @@ function listSites() {
     if (n) out.push({site: name, n, last, cover, coverV});
   }
   out.sort((a, b) => a.last < b.last ? 1 : a.last > b.last ? -1 : a.site.localeCompare(b.site, 'ko'));
+  allow_(out.map(x => x.cover).filter(Boolean));
   return {sites: out, inbox};
 }
 
 // 날짜 폴더별 사진 목록 (최근 날짜부터)
-function listPhotos(site) {
+function listPhotos(site) { return cached_('lp:' + clean_(site), () => listPhotos_(site)); }
+function listPhotos_(site) {
   const f = siteFolder_(site);
   if (!f || clean_(site) === INBOX_NAME) return [];
   const days = [];
@@ -228,23 +241,30 @@ function listPhotos(site) {
     if (files.length) days.push({day: d.getName(), files});
   }
   days.sort((a, b) => a.day < b.day ? 1 : -1);
+  allow_([].concat.apply([], days.map(d => d.files.map(x => x.id))));
   return days;
 }
 
 // 904 현장사진 폴더 안(현장/날짜)의 사진만 꺼내줌
-function getPhoto(id, small) {
+function inSite_(f) {
   const root = getRoot_().getId();
-  const f = DriveApp.getFileById(id);
-  let ok = false;
   const p1 = f.getParents();
-  while (p1.hasNext() && !ok) {
+  while (p1.hasNext()) {
     const day = p1.next(), p2 = day.getParents();
-    while (p2.hasNext() && !ok) {
+    while (p2.hasNext()) {
       const site = p2.next(), p3 = site.getParents();
-      while (p3.hasNext() && !ok) if (p3.next().getId() === root && site.getName() !== INBOX_NAME) ok = true;
+      while (p3.hasNext()) if (p3.next().getId() === root && site.getName() !== INBOX_NAME) return true;
     }
   }
-  if (!ok) throw new Error('볼 수 없는 사진이에요');
+  return false;
+}
+function checked_(id) {
+  const f = DriveApp.getFileById(id);
+  if (!C_().get('ok:' + id) && !inSite_(f)) throw new Error('볼 수 없는 사진이에요');
+  return f;
+}
+function getPhoto(id, small) {
+  const f = checked_(id);
   const isV = /^video\//.test(f.getMimeType());
   if (isV && !small && f.getSize() > 20 * 1024 * 1024) return {big: true};
   let b = null;
@@ -307,7 +327,70 @@ function putVideo(url, b64, start, total) {
     muteHttpExceptions: true
   });
   const c = res.getResponseCode();
-  if (c === 200 || c === 201) return {done: true};
+  if (c === 200 || c === 201) { bump_(); return {done: true}; }
   if (c === 308) { const r = res.getHeaders()['Range'] || res.getHeaders()['range'] || ''; const m = /-(\d+)$/.exec(r); return {done: false, next: m ? +m[1] + 1 : end + 1}; }
   throw new Error('조각 올리기 실패 (' + c + ')');
+}
+
+// ───────── 빠르게 보기: 목록·작은 사진 기억 (최대 6시간) ─────────
+function C_() { return CacheService.getScriptCache(); }
+function ver_() { return PropertiesService.getScriptProperties().getProperty('PV') || '1'; }
+function bump_() {
+  try { const p = PropertiesService.getScriptProperties(); p.setProperty('PV', String((+p.getProperty('PV') || 1) + 1)); } catch (e) {}
+}
+function cached_(key, fn) {
+  const k = key + '@' + ver_(), c = C_();
+  const hit = c.get(k);
+  if (hit) return JSON.parse(hit);
+  const v = fn(), s = JSON.stringify(v);
+  if (s.length < 95000) c.put(k, s, 1800);
+  return v;
+}
+function allow_(ids) {
+  if (!ids.length) return;
+  const m = {}; ids.forEach(i => m['ok:' + i] = '1');
+  try { C_().putAll(m, 21600); } catch (e) {}
+}
+function cachedThumbs_(ids) {
+  const out = {};
+  if (!ids.length) return out;
+  const hit = C_().getAll(ids.map(i => 'th:' + i));
+  ids.forEach(i => { const h = hit['th:' + i]; if (h) out[i] = JSON.parse(h); });
+  return out;
+}
+
+// 작은 사진 여러 장을 한 번에 (기억해둔 건 바로, 없는 것만 드라이브에서)
+function getThumbs(ids) {
+  ids = (ids || []).slice(0, 15).map(String);
+  const out = cachedThumbs_(ids), put = {};
+  for (const id of ids) {
+    if (out[id]) continue;
+    try {
+      const f = checked_(id);
+      let b = null; try { b = f.getThumbnail(); } catch (e) {}
+      if (!b) { out[id] = null; continue; }
+      const r = {type: b.getContentType() || 'image/jpeg', b64: Utilities.base64Encode(b.getBytes())}, s = JSON.stringify(r);
+      out[id] = r;
+      if (s.length < 95000) put['th:' + id] = s;
+    } catch (e) { out[id] = null; }
+  }
+  if (Object.keys(put).length) { try { C_().putAll(put, 21600); } catch (e) {} }
+  return out;
+}
+
+// 4시간마다: 최근 현장 목록·작은 사진을 미리 불러둠 (볼 때 바로 뜨게)
+function warmCache() {
+  const st = Date.now();
+  const r = listSites();
+  getThumbs(r.sites.map(x => x.cover).filter(Boolean));
+  for (const x of r.sites.slice(0, 15)) {
+    if (Date.now() - st > 4 * 60 * 1000) break;
+    const ids = [].concat.apply([], listPhotos(x.site).map(d => d.files.map(f => f.id)));
+    for (let i = 0; i < ids.length && Date.now() - st < 4 * 60 * 1000; i += 15) getThumbs(ids.slice(i, i + 15));
+  }
+}
+function setupWarm() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'warmCache').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('warmCache').timeBased().everyHours(4).create();
+  const t0 = Date.now(); warmCache(); Logger.log('warm ok ' + (Date.now() - t0) + 'ms');
 }

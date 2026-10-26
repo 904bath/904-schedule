@@ -17,10 +17,15 @@
   .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:6px; }
   .grid button { padding:0; border:0; background:#e8e4dc; border-radius:8px; aspect-ratio:1; overflow:hidden; cursor:pointer; }
   .grid img { width:100%; height:100%; object-fit:cover; display:block; }
+  .grid button, .sc .im { background:linear-gradient(100deg,#e8e4dc 40%,#f3f0ea 50%,#e8e4dc 60%) #e8e4dc; background-size:200% 100%; animation:sh 1.2s linear infinite; }
+  .grid button.ld, .sc .im.ld { animation:none; background:#e8e4dc; }
+  @keyframes sh { to { background-position:-200% 0; } }
+  img[data-src]:not([src]) { visibility:hidden; }
   .grid button { position:relative; }
   .grid .pl { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:30px; text-shadow:0 1px 6px rgba(0,0,0,.6); pointer-events:none; }
   #lb video { max-width:100%; max-height:100%; }
   .empty { text-align:center; color:var(--mute); padding:40px 0; line-height:1.6; }
+  .back[hidden] { display:none; }
   .back { display:inline-block; font-size:14px; font-weight:600; color:var(--accent); text-decoration:none; margin:0 0 6px; }
   .q { width:100%; font-size:16px; padding:12px; border:1px solid var(--line); border-radius:10px; background:#fff; margin:0 0 12px; }
   .sites { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
@@ -52,6 +57,8 @@
 <script>
   var SITE = <?!= JSON.stringify(site) ?>;
   var APP = <?!= JSON.stringify(ScriptApp.getService().getUrl()) ?>;
+  var DATA = <?!= JSON.stringify(data).replace(/</g, '\\u003c') ?>;
+  var PRE = <?!= JSON.stringify(pre).replace(/</g, '\\u003c') ?>;
   var $ = function (id) { return document.getElementById(id); };
   $('ttl').textContent = SITE || '현장사진';
   $('up').href = APP + '?site=' + encodeURIComponent(SITE);
@@ -62,7 +69,7 @@
   if (!SITE) {
     // 현장 목록 — 최근에 사진 올라온 현장부터
     $('ttl').textContent = '현장사진'; $('up').href = APP; $('up').textContent = '📷 사진·동영상 올리기';
-    run('listSites').then(function (r) {
+    (DATA ? Promise.resolve(DATA) : run('listSites')).then(function (r) {
       var ss = r.sites || [];
       $('sub').textContent = ss.length ? '현장 ' + ss.length + '곳 · 최근 순' : '';
       var h = (r.inbox ? '<div class="inb">미분류 ' + r.inbox + '개 — 밤 10시쯤 현장별로 정리돼요</div>' : '') +
@@ -78,7 +85,7 @@
       lazy();
     }).catch(function () { $('sub').textContent = '목록을 불러오지 못했어요. 새로고침해 주세요.'; });
   }
-  else run('listPhotos', SITE).then(function (days) {
+  else (DATA ? Promise.resolve(DATA) : run('listPhotos', SITE)).then(function (days) {
     var n = days.reduce(function (s, d) { return s + d.files.length; }, 0);
     $('sub').textContent = n ? '사진·동영상 ' + n + '개 · 날짜별' : '';
     if (!n) { $('list').innerHTML = '<div class="empty">아직 올라온 사진이 없어요.<br>미분류로 올린 사진은 밤에 정리되면 여기 보여요.</div>'; return; }
@@ -90,16 +97,26 @@
   }).catch(function () { $('sub').textContent = '사진을 불러오지 못했어요. 새로고침해 주세요.'; });
 
   // 화면에 보이는 것부터 작은 사진으로 불러옴
-  var queue = [], busy = 0;
+  // 이미 받아온 건 바로 붙이고, 나머지는 15장씩 묶어서 한 번에 (동시에 3묶음까지)
+  var queue = [], busy = 0, waitT = 0, memo = PRE || {};
+  function show(img, r) {
+    var box = img.parentNode; if (box) box.classList.add('ld');
+    if (r && r.b64) img.src = 'data:' + r.type + ';base64,' + r.b64;
+  }
   function lazy() {
-    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); queue.push(e.target); pump(); } }); }, {rootMargin: '300px'});
-    document.querySelectorAll('img[data-src]').forEach(function (i) { io.observe(i); });
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (!e.isIntersecting) return; io.unobserve(e.target);
+      var id = e.target.dataset.src; if (memo[id]) show(e.target, memo[id]); else { queue.push(e.target); clearTimeout(waitT); waitT = setTimeout(pump, 30); } }); }, {rootMargin: '600px'});
+    document.querySelectorAll('img[data-src]').forEach(function (i) { if (memo[i.dataset.src]) show(i, memo[i.dataset.src]); else io.observe(i); });
   }
   function pump() {
-    while (busy < 4 && queue.length) {
-      var img = queue.shift(); busy++;
-      (function (img) { run('getPhoto', img.dataset.src, true).then(function (r) { if (r && r.b64) img.src = 'data:' + r.type + ';base64,' + r.b64; })
-        .catch(function () {}).then(function () { busy--; pump(); }); })(img);
+    while (busy < 3 && queue.length) {
+      var batch = queue.splice(0, 15); busy++;
+      (function (batch) {
+        run('getThumbs', batch.map(function (i) { return i.dataset.src; })).then(function (r) {
+          batch.forEach(function (img) { var t = r && r[img.dataset.src]; if (t) memo[img.dataset.src] = t; show(img, t); });
+        }).catch(function () { batch.forEach(function (img) { show(img, null); }); })
+          .then(function () { busy--; pump(); });
+      })(batch);
     }
   }
 

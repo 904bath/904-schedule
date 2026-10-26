@@ -141,8 +141,12 @@
         var c = document.createElement('canvas');
         c.width = Math.round(w * r); c.height = Math.round(h * r);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        // 보기 페이지용 작은 사진 (긴 변 360px)
+        var t = document.createElement('canvas'), tr = Math.min(1, 360 / Math.max(w, h));
+        t.width = Math.round(w * tr); t.height = Math.round(h * tr);
+        t.getContext('2d').drawImage(img, 0, 0, t.width, t.height);
         URL.revokeObjectURL(url);
-        resolve(c.toDataURL('image/jpeg', 0.85).split(',')[1]);
+        resolve({big: c.toDataURL('image/jpeg', 0.85).split(',')[1], small: t.toDataURL('image/jpeg', 0.7).split(',')[1]});
       };
       img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('사진을 읽지 못했어요')); };
       img.src = url;
@@ -187,9 +191,10 @@
         if (/^video\//.test(x.f.type)) {
           await sendVideo(x.f, site, date, meta, x.s);
         } else {
-          var b64 = await shrink(x.f);
+          var im = await shrink(x.f);
           var base = x.f.name.replace(/\.[^.]+$/, '') + '.jpg';
-          await send(site, date, base, b64, meta);
+          meta.thumb = im.small;
+          await send(site, date, base, im.big, meta);
         }
         mark(x, 'ok', '✓'); okCount++;
       } catch (e) {
