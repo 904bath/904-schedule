@@ -24,14 +24,16 @@
     const rooms = (e.rooms || []).length > 1 ? e.rooms : [];
     const groups = new Map(); // 위치 → [[날짜, [공정…]]]
     for (const d of days) for (const u of plan[d]){ if (UNIT[u]?.k === "prot" || UNIT[u]?.k === "sil") continue;
-      const r = rooms.length ? (roomTag(e, d, u) || "공통") : ""; if (!groups.has(r)) groups.set(r, new Map());
+      let r = rooms.length ? roomTag(e, d, u) : "";
+      if (rooms.length && !r){ const rs = [...new Set(plan[d].map(x => roomTag(e, d, x)).filter(Boolean))]; r = rs.length === 1 ? rs[0] : "공통"; }
+      if (!groups.has(r)) groups.set(r, new Map());
       const g = groups.get(r); if (!g.has(d)) g.set(d, []); if (!g.get(d).includes(nm(u))) g.get(d).push(nm(u)); }
     const order = [...rooms, "공통", ""].filter(r => groups.has(r));
     for (const r of order){
       const steps = [...groups.get(r).entries()], who = r ? r + josa(r, "은 ", "는 ") : "";
       const txt = ([d, a]) => `${d === tk ? "오늘" : sd(d)} ${a.join("·")}`;
       const past = steps.filter(([d]) => d < tk), now = steps.filter(([d]) => d >= tk);
-      if (r === "공통" && !now.length) continue; // 공통(설비 등) 끝난 건 생략
+      if (r === "공통"){ if (now.length) lines.push(`그 밖에 ${now.map(txt).join(", ")}도 있어요.`); continue; } // 위치 안 정한 것은 남은 것만
       if (!now.length) lines.push(`${who}${sd(steps[0][0])} ${steps[0][1].join("·")}부터 ${sd(steps.at(-1)[0])} ${steps.at(-1)[1].join("·")}까지 다 끝났어요.`);
       else if (!past.length) lines.push(`${who}${now.map(txt).join(", ")}${now.length > 1 ? "로 진행해요." : " 해요."}`);
       else lines.push(`${who}${sd(past.at(-1)[0])}까지 했고, ${now.map(txt).join(", ")}${now.length > 1 ? "이면 끝나요." : " 남았어요."}`);
@@ -47,7 +49,6 @@
         if (d && d < tk) continue;
         const r = d ? roomTag(e, d, (plan[d] || []).find(u => UNIT[u].k === k)) : "", where = `${r ? r + " " : ""}${lab}${d ? `(${sd(d)})` : ""}`;
         if (!v && !bkOn(p, d)) todo.push(`${where} 업체 아직 안 정했고 연락 전이에요.`);
-        else if (!v) todo.push(`${where} 업체 이름이 비어 있어요.`);
         else if (!bkOn(p, d)) todo.push(`${where} ${v}에 아직 연락 전이에요.`);
       } }
     if (vend.size){ const call = v => { const c = (S.vendors || []).find(x => x.name && x.name.replace(/\s/g, "") === v.replace(/\s/g, "")); return c && c.phone ? ` <a href="tel:${H(c.phone.replace(/[^\d+]/g, ""))}" target="_blank" rel="noopener">📞</a>` : ""; };
