@@ -27,6 +27,9 @@ def clean_event(e):
     p = e.get("proc")
     if isinstance(p, dict):
         e["proc"] = {k: ({a: b for a, b in v.items() if a not in PROC_DROP} if isinstance(v, dict) else v) for k, v in p.items()}
+        for v in e["proc"].values():  # 날짜별 외주 기록(dd)도 업체 이름만 남김
+            if isinstance(v, dict) and isinstance(v.get("dd"), dict):
+                v["dd"] = {d: ({"vendor": x.get("vendor", "")} if isinstance(x, dict) else {}) for d, x in v["dd"].items()}
     if isinstance(e.get("mat"), dict):
         e["mat"] = {a: b for a, b in e["mat"].items() if a not in PROC_DROP}
     e["photos"], e["photoInfo"] = [], {}
