@@ -85,7 +85,7 @@ function upload(site, date, who, name, mime, b64, meta) {
   const info = {taken: takenOk ? taken.toISOString() : '', up: new Date().toISOString()};
   if (isFinite(meta.lat) && isFinite(meta.lng)) { info.lat = +meta.lat; info.lng = +meta.lng; }
   f.setDescription(JSON.stringify(info));
-  if (meta.thumb && meta.thumb.length < 90000) { try { C_().put('th:' + f.getId(), JSON.stringify({type: 'image/jpeg', b64: meta.thumb}), 21600); } catch (e) {} }
+  if (meta.thumb && meta.thumb.length < 90000) { try { C_().put('t2:' + f.getId(), JSON.stringify({type: 'image/jpeg', b64: meta.thumb}), 21600); } catch (e) {} }
   bump_();
   return { ok: true, inbox: !hasSite };
 }
@@ -354,8 +354,8 @@ function allow_(ids) {
 function cachedThumbs_(ids) {
   const out = {};
   if (!ids.length) return out;
-  const hit = C_().getAll(ids.map(i => 'th:' + i));
-  ids.forEach(i => { const h = hit['th:' + i]; if (h) out[i] = JSON.parse(h); });
+  const hit = C_().getAll(ids.map(i => 't2:' + i));
+  ids.forEach(i => { const h = hit['t2:' + i]; if (h) out[i] = JSON.parse(h); });
   return out;
 }
 
@@ -363,19 +363,30 @@ function cachedThumbs_(ids) {
 function getThumbs(ids) { return thumbs_(ids, false); }
 function thumbs_(ids, keep) {
   ids = (ids || []).slice(0, 15).map(String);
-  const out = cachedThumbs_(ids), put = {};
+  const c = C_(), out = cachedThumbs_(ids), put = {}, need = [];
   for (const id of ids) {
-    if (out[id]) { if (keep) put['th:' + id] = JSON.stringify(out[id]); continue; }
-    try {
-      const f = checked_(id);
-      let b = null; try { b = f.getThumbnail(); } catch (e) {}
-      if (!b) { out[id] = null; continue; }
-      const r = {type: b.getContentType() || 'image/jpeg', b64: Utilities.base64Encode(b.getBytes())}, s = JSON.stringify(r);
-      out[id] = r;
-      if (s.length < 95000) put['th:' + id] = s;
-    } catch (e) { out[id] = null; }
+    if (out[id]) { if (keep) put['t2:' + id] = JSON.stringify(out[id]); continue; }
+    need.push(id);
   }
-  if (Object.keys(put).length) { try { C_().putAll(put, 21600); } catch (e) {} }
+  if (need.length) {
+    // 이 앱 폴더 안 사진만 (목록에서 확인한 건 기억해둠)
+    const okm = c.getAll(need.map(i => 'ok:' + i));
+    const allowed = need.filter(id => { if (okm['ok:' + id]) return true; try { return inSite_(DriveApp.getFileById(id)); } catch (e) { return false; } });
+    const h = {Authorization: 'Bearer ' + ScriptApp.getOAuthToken()};
+    // 드라이브에 작은 미리보기(긴 변 360px) 주소를 한꺼번에 물어보고, 한꺼번에 받음
+    const metas = UrlFetchApp.fetchAll(allowed.map(id => ({url: 'https://www.googleapis.com/drive/v3/files/' + id + '?fields=thumbnailLink', headers: h, muteHttpExceptions: true})));
+    const links = [];
+    metas.forEach((r, i) => { try { const l = JSON.parse(r.getContentText()).thumbnailLink; if (l) links.push({id: allowed[i], url: l.replace(/=s\d+$/, '') + '=s360'}); } catch (e) {} });
+    const imgs = links.length ? UrlFetchApp.fetchAll(links.map(x => ({url: x.url, headers: h, muteHttpExceptions: true}))) : [];
+    imgs.forEach((r, i) => {
+      if (r.getResponseCode() !== 200) return;
+      const b = r.getBlob(), v = {type: b.getContentType() || 'image/jpeg', b64: Utilities.base64Encode(b.getBytes())}, s = JSON.stringify(v);
+      out[links[i].id] = v;
+      if (s.length < 95000) put['t2:' + links[i].id] = s;
+    });
+  }
+  if (Object.keys(put).length) { try { c.putAll(put, 21600); } catch (e) {} }
+  ids.forEach(id => { if (!(id in out)) out[id] = null; });
   return out;
 }
 
