@@ -48,7 +48,7 @@
   st.textContent = `.sumbox{margin:8px 0 10px;padding:12px;border:1px solid var(--line,#e5e5e5);border-radius:14px;background:var(--surface2,#f7f6f3);font-size:13px;line-height:1.45}
   .sumbox .sum-h{font-weight:800;font-size:12px;letter-spacing:.04em;color:var(--muted,#777);margin-bottom:6px}
   .sumbox .sum-top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px}.sumbox .sum-top span{color:var(--muted,#777)}
-  .sumbox .sum-row{display:flex;gap:8px;margin:4px 0}.sumbox .sum-row>i{flex:none;width:44px;font-style:normal;font-weight:700;color:var(--muted,#777)}
+  .sumbox .sum-row{display:flex;gap:8px;margin:4px 0}.sumbox .sum-row>i{flex:none;width:58px;font-style:normal;font-weight:700;color:var(--muted,#777)}
   .sumbox .sum-sub{font-weight:800;margin:8px 0 2px}
   .sumbox .sum-days{display:grid;gap:3px;margin:6px 0}
   .sumbox .sd{display:flex;align-items:baseline;gap:8px;padding:3px 6px;border-radius:8px}.sumbox .sd>b{flex:none;width:64px}
