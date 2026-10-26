@@ -42,6 +42,8 @@ config = {}
 if "companies" in cfg:
     c = cfg["companies"]
     config["companies"] = {"leaders": c.get("leaders", []), "list": [{"name": x.get("name"), "leader": x.get("leader"), "also": x.get("also", [])} for x in c.get("list", [])]}
+if "vendors" in cfg:  # 외주 업체 연락처 (이름·담당·전화만)
+    config["vendors"] = {"list": [{k: x.get(k, "") for k in ("name", "person", "phone")} for x in cfg["vendors"].get("list", []) if isinstance(x, dict)]}
 if "main" in cfg:  # 등급 이름만 (일당 뺌)
     g = cfg["main"].get("groups", {})
     config["main"] = {"groups": {k: {"label": (v or {}).get("label", ""), "wage": 0} for k, v in g.items()}}
