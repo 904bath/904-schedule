@@ -360,11 +360,12 @@ function cachedThumbs_(ids) {
 }
 
 // 작은 사진 여러 장을 한 번에 (기억해둔 건 바로, 없는 것만 드라이브에서)
-function getThumbs(ids) {
+function getThumbs(ids) { return thumbs_(ids, false); }
+function thumbs_(ids, keep) {
   ids = (ids || []).slice(0, 15).map(String);
   const out = cachedThumbs_(ids), put = {};
   for (const id of ids) {
-    if (out[id]) continue;
+    if (out[id]) { if (keep) put['th:' + id] = JSON.stringify(out[id]); continue; }
     try {
       const f = checked_(id);
       let b = null; try { b = f.getThumbnail(); } catch (e) {}
@@ -382,11 +383,12 @@ function getThumbs(ids) {
 function warmCache() {
   const st = Date.now();
   const r = listSites();
-  getThumbs(r.sites.map(x => x.cover).filter(Boolean));
+  const covers = r.sites.map(x => x.cover).filter(Boolean);
+  for (let i = 0; i < covers.length; i += 15) thumbs_(covers.slice(i, i + 15), true);
   for (const x of r.sites.slice(0, 15)) {
     if (Date.now() - st > 4 * 60 * 1000) break;
     const ids = [].concat.apply([], listPhotos(x.site).map(d => d.files.map(f => f.id)));
-    for (let i = 0; i < ids.length && Date.now() - st < 4 * 60 * 1000; i += 15) getThumbs(ids.slice(i, i + 15));
+    for (let i = 0; i < ids.length && Date.now() - st < 4 * 60 * 1000; i += 15) thumbs_(ids.slice(i, i + 15), true);
   }
 }
 function setupWarm() {
