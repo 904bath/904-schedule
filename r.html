@@ -82,6 +82,8 @@
   var T = 0, toast = function(t){ var x = $("toast"); x.textContent = t; x.hidden = false; clearTimeout(T); T = setTimeout(function(){ x.hidden = true; }, 2800); };
   var q = new URLSearchParams(location.search), D = null;
   var ub = function(s){ return decodeURIComponent(escape(atob(String(s || "").replace(/-/g, "+").replace(/_/g, "/")))); };
+  var RAW = location.search.slice(1); // 한 덩어리 링크: ?v1~일정~공정~날짜,날짜~코드~현장~업체~번호 (& 없이 → 문자·카톡에서 안 잘림)
+  if (/^v1~/.test(RAW)){ var P = RAW.split("~"); q = new URLSearchParams(); q.set("e", decodeURIComponent(P[1] || "")); q.set("k", P[2] || ""); q.set("d", (P[3] || "").replace(/,/g, ".")); q.set("c", P[4] || ""); if (P[5]) q.set("s", P[5]); if (P[6]) q.set("n", P[6]); if (P[7]) q.set("p", P[7]); }
   if (q.get("e")){ // 짧은 링크: e=일정 k=공정 d=날짜(YYMMDD.YYMMDD) c=확인코드 s=현장(b64) n=업체(b64)
     var KL = {prot:"보양",demo:"철거",plumb:"설비",elec:"전기",wp:"방수",tile:"타일",sani:"도기 세팅",dome:"돔천장",sil:"실리콘",etc:"기타"};
     var ds = (q.get("d") || "").split(".").filter(function(x){ return /^\d{6}$/.test(x); }).map(function(x){ return "20" + x.slice(0, 2) + "-" + x.slice(2, 4) + "-" + x.slice(4); });
