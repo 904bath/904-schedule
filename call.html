@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>904 전화 걸기</title>
+<style>
+  :root{--bg:#f4f6f5;--fg:#1b1f1d;--muted:#66706b;--card:#fff;--line:#dde3e0;--go:#1f5c3d;--go2:#2f7d4f}
+  @media (prefers-color-scheme:dark){:root{--bg:#121514;--fg:#eef2f0;--muted:#9aa39f;--card:#1c2120;--line:#2c3331;--go:#2f7d4f;--go2:#3d9a63;color-scheme:dark}}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.45 -apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-left,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px))}
+  main{width:100%;max-width:380px;display:grid;gap:14px;text-align:center}
+  .brand{font:800 13px/1 sans-serif;letter-spacing:2px;color:var(--muted)}
+  .who{font:800 22px/1.3 sans-serif}
+  .num{font:800 32px/1.2 sans-serif;letter-spacing:.5px;font-variant-numeric:tabular-nums;user-select:all;-webkit-user-select:all}
+  .go{display:grid;place-items:center;min-height:64px;border-radius:18px;background:var(--go);color:#fff;font:800 20px sans-serif;text-decoration:none}
+  .go:active{background:var(--go2)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .sub{display:grid;place-items:center;min-height:50px;border-radius:14px;background:var(--card);border:1px solid var(--line);color:var(--fg);font:700 15px sans-serif;text-decoration:none;cursor:pointer}
+  .hint{color:var(--muted);font-size:13.5px}
+  .msg{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-align:left;font-size:13.5px;white-space:pre-wrap;max-height:30vh;overflow:auto}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">90.4 BATH</div>
+  <div class="who" id="who"></div>
+  <div class="num" id="num"></div>
+  <a class="go" id="go" href="#">📞 전화 걸기</a>
+  <div class="row"><a class="sub" id="alt" href="#">💬 문자</a><button type="button" class="sub" id="cp">번호 복사</button></div>
+  <div class="msg" id="msg" hidden></div>
+  <p class="hint" id="hint">전화 앱이 자동으로 안 열리면 위 버튼을 눌러 주세요.<br>다 쓰면 이 창은 닫고 캘린더로 돌아가면 돼요.</p>
+</main>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search);
+  var n = String(q.get("n") || "").replace(/[^\d+]/g, "");
+  var mode = q.get("t") === "sms" ? "sms" : "tel";
+  var body = q.get("b") || "", name = q.get("nm") || "";
+  var ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  var fmt = function(d){ if (/^02\d{7,8}$/.test(d)) return d.replace(/^(02)(\d{3,4})(\d{4})$/, "$1-$2-$3"); if (/^\d{10,11}$/.test(d)) return d.replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3"); return d; };
+  var tel = "tel:" + n, sms = "sms:" + n + (body ? (ios ? "&" : "?") + "body=" + encodeURIComponent(body) : "");
+  var $ = function(id){ return document.getElementById(id); };
+  if (!n){ $("who").textContent = "번호가 없어요"; $("go").hidden = true; document.querySelector(".row").hidden = true; $("hint").textContent = "캘린더에서 다시 눌러 주세요."; return; }
+  $("who").textContent = name; $("num").textContent = fmt(n);
+  if (mode === "sms"){ $("go").textContent = "💬 문자 보내기"; $("go").href = sms; $("alt").textContent = "📞 전화"; $("alt").href = tel; if (body){ $("msg").textContent = body; $("msg").hidden = false; } $("hint").innerHTML = "문자 앱이 자동으로 안 열리면 위 버튼을 눌러 주세요.<br>요청서 이미지는 문자 창에서 붙여넣기 하면 돼요."; }
+  else { $("go").href = tel; $("alt").href = "sms:" + n; }
+  $("cp").addEventListener("click", function(){ var t = fmt(n), b = $("cp");
+    var done = function(ok){ b.textContent = ok ? "✓ 복사됨" : "길게 눌러 복사"; };
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(function(){ done(true); }, function(){ done(false); }); else done(false); });
+  // 열리자마자 바로 전화·문자 앱으로
+  setTimeout(function(){ location.href = mode === "sms" ? sms : tel; }, 150);
+})();
+</script>
+</body>
+</html>
