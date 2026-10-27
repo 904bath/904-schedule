@@ -75,6 +75,7 @@
 <script>
 (function(){
   var SEND_TO = "https://formsubmit.co/ajax/904bath@gmail.com";
+  var GAS = ""; // 구글 앱스 스크립트 웹 앱 주소(…/exec) — 넣으면 구글 시트 + 우리 메일로 받음, 비어 있으면 FormSubmit
   var $ = function(id){ return document.getElementById(id); };
   var H = function(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
   var fmt = function(d){ d = String(d || "").replace(/[^\d]/g, ""); if (/^\d{10,11}$/.test(d)) return d.replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3"); return d; };
@@ -123,9 +124,10 @@
     var label = ans === "ok" ? "가능" : ans === "no" ? "불가능" : "다른 날 가능", note = $("note").value.trim(), by = $("by").value.trim(), amount = ans === "no" ? 0 : (Number(String($("amt").value).replace(/[^\d]/g, "")) || 0);
     var data = {v: 1, t: "outreply", ev: D.ev, kk: D.kk, c: D.c, ds: D.ds || [], ans: ans, alt: alt, amount: amount, note: note, by: by, vendor: D.to || "", site: D.site || "", k: D.k || "", at: new Date().toISOString()};
     var txt = ["[" + D.k + " 외주 회신] " + label, "현장: " + D.site, "업체: " + (by || D.to || ""), "요청 일정: " + ((D.ds || []).map(mdw).join(", ") || "협의"), alt.length ? "가능한 날: " + alt.map(mdw).join(", ") : "", amount ? "예상 견적: " + amount.toLocaleString("ko-KR") + "원" : "", note ? "메모: " + note : ""].filter(Boolean).join("\n");
-    fetch(SEND_TO, {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"},
+    (GAS ? fetch(GAS, {method: "POST", mode: "no-cors", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(data)}) // 구글: 답은 못 읽지만 전송되면 끝
+    : fetch(SEND_TO, {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"},
       body: JSON.stringify({_subject: "[외주 회신] " + label + " · " + (by || D.to || "업체") + " · " + D.site + " · " + D.k, _template: "box", _captcha: "false", 회신: txt, data: "904OUT" + JSON.stringify(data) + "904END"})})
-      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || j.success === false || j.success === "false") throw new Error(j.message || ("HTTP " + r.status)); }); })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || j.success === false || j.success === "false") throw new Error(j.message || ("HTTP " + r.status)); }); }))
       .then(function(){ try { localStorage.setItem(KEY, JSON.stringify({label: label, at: Date.now()})); } catch(_){}
         $("m").innerHTML = '<div class="done"><b>회신 보냈어요</b><p>' + H(label) + (alt.length ? " · " + H(alt.map(mdw).join(", ")) : "") + (amount ? " · " + amount.toLocaleString("ko-KR") + "원" : "") + '</p><p class="dim">904에서 확인하고 다시 연락드릴게요.<br>감사합니다.</p></div>'; window.scrollTo({top: 0}); })
       .catch(function(err){ sending = false; b.disabled = false; b.textContent = "다시 보내기";
