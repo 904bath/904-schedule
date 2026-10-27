@@ -40,6 +40,7 @@
   .oc-where{display:grid;gap:4px}.oc-where b{font-weight:800}.oc-where span{color:#3d4441}.oc-where small{display:block;color:#5b625e;font-size:12.5px}
   .oc-body{display:grid;gap:3px}.oc-memo{margin-top:4px;padding:7px 10px;border-radius:10px;background:#fbf4e4;font-weight:600}
   .oc-who>div{display:grid;gap:3px}.oc-who>div>div{display:flex;gap:8px}.oc-who b{font-weight:800;min-width:40px}.oc-who span{font-variant-numeric:tabular-nums;font-weight:600}
+  .oc-reply{padding:8px 10px;border-radius:10px;background:#1f5c3d;color:#fff;font:700 12.5px "Noto Sans KR",sans-serif;text-align:center}
   .oc-foot{padding-top:10px;border-top:1px solid #dfe5e1;font:600 9.5px Poppins,sans-serif;letter-spacing:1.2px;color:#8a918d;text-align:center}
   #stage{position:fixed;left:-9999px;top:0}
 </style>
@@ -86,10 +87,12 @@
       + ((D.where || []).length ? '<div class="oc-sec"><i>위치</i><div class="oc-where">' + D.where.map(function(w){ return '<div><b>' + H(w[0]) + '</b>' + (w[1] ? ' <span>' + H(w[1]) + '</span>' : '') + (w[2] ? '<small>' + H(w[2]) + '</small>' : '') + '</div>'; }).join("") + '</div></div>' : '')
       + ((D.body || []).length || D.memo ? '<div class="oc-sec"><i>내용</i><div class="oc-body">' + (D.body || []).map(function(l){ return '<div>' + H(l) + '</div>'; }).join("") + (D.memo ? '<div class="oc-memo">' + H(D.memo).replace(/\n/g, "<br>") + '</div>' : '') + '</div></div>' : '')
       + ((D.who || []).length ? '<div class="oc-sec oc-who"><i>담당</i><div>' + D.who.map(function(w){ return '<div><b>' + H(w[0]) + '</b><span>' + H(fmt(w[1])) + '</span></div>'; }).join("") + '</div></div>' : '')
+      + (D.ev ? '<div class="oc-reply">가능 여부는 함께 보낸 링크에서 눌러 회신해 주세요</div>' : '')
       + '<div class="oc-foot">90.4 BATH INTERIOR DESIGN · WITH TILO X 楚越</div></div>';
     $("go").textContent = "💬 이미지 문자로 보내기"; $("alt").textContent = "📞 전화"; $("share").hidden = false; $("share").textContent = "이미지 복사하고 문자 창 열기"; $("prev").hidden = false;
     $("prev").innerHTML = '<p class="hint">요청서 이미지 만드는 중…</p>';
     $("hint").innerHTML = "공유 창에서 <b>메시지(문자)</b> 또는 <b>카카오톡</b>을 고르고, 받는 사람에 위 번호를 넣어 주세요.<br>이미지를 길게 누르면 사진에 저장할 수도 있어요.";
+    var REPLY = location.href.split("?")[0].replace(/call\.html$/, "reply.html") + "?d=" + q.get("d"); // 업체가 가능·불가·다른 날 회신하는 페이지
     var blob = null, file = null;
     var ready = (document.fonts ? document.fonts.ready : Promise.resolve()).then(function(){
       var im = document.querySelector("#card .oc-logo"); return im && !im.complete ? new Promise(function(r){ im.onload = im.onerror = r; }) : null;
@@ -103,12 +106,12 @@
     var shareImg = function(){ // 폰 공유 창으로 이미지 그대로 → 메시지·카톡
       if (!file){ toast("이미지를 아직 만드는 중이에요 · 잠깐 뒤 다시 눌러 주세요"); return; }
       if (navigator.canShare && navigator.canShare({files: [file]})){
-        navigator.share({files: [file]}).then(function(){ toast("보냈어요"); }, function(e){ if (!e || e.name !== "AbortError") toast("공유가 안 돼요 · 아래 [이미지 복사하고 문자 창 열기]를 써 주세요"); }); return; }
+        navigator.share(Object.assign({files: [file]}, D.ev ? {text: "가능 여부는 여기서 눌러 회신해 주세요 ▶ " + REPLY} : {})).then(function(){ toast("보냈어요"); }, function(e){ if (!e || e.name !== "AbortError") toast("공유가 안 돼요 · 아래 [이미지 복사하고 문자 창 열기]를 써 주세요"); }); return; }
       toast("이 브라우저는 공유가 안 돼요 · 아래 [이미지 복사하고 문자 창 열기]를 써 주세요"); };
     $("go").onclick = shareImg;
     $("share").onclick = function(){ var b = this; b.disabled = true;
       copyImg().then(function(ok){ b.disabled = false;
-        if (ok){ toast("이미지 복사됨 · 문자 입력칸을 길게 눌러 붙여넣기"); setTimeout(function(){ go(smsUrl("")); }, 400); }
+        if (ok){ toast("이미지 복사됨 · 문자 입력칸을 길게 눌러 붙여넣기"); setTimeout(function(){ go(smsUrl(D.ev ? "가능 여부 회신 ▶ " + REPLY : "")); }, 400); }
         else { toast("이미지 복사가 안 되는 폰이에요 · 위 [이미지 문자로 보내기]를 써 주세요"); } }); };
     $("alt").onclick = function(){ go("tel:" + n); };
     return;
