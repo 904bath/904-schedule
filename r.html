@@ -41,6 +41,8 @@
   .dates{display:grid;gap:6px}
   .dates .r{display:flex;gap:6px}.dates .r input{flex:1;min-width:0}.dates .r button{flex:none;width:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);font:700 18px var(--font)}
   .won{position:relative;display:block}.won input{padding-right:40px;font-variant-numeric:tabular-nums}.won em{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--muted);font-weight:700}
+  .fb{display:grid;gap:8px;padding:12px;border-radius:14px;background:var(--no-soft);text-align:center}.fb b{font:800 15px var(--font);color:var(--no)}.fb small{color:var(--muted)}
+  a.send{display:grid;place-items:center;text-decoration:none}
   .add{justify-self:start;border:0;background:none;color:var(--go);font:700 14px var(--font);padding:4px 0;cursor:pointer}
   .send{min-height:58px;border:0;border-radius:16px;background:var(--go);color:#fff;font:800 18px var(--font);cursor:pointer;touch-action:manipulation}
   .send:disabled{opacity:.5}
@@ -84,7 +86,7 @@
     var ds = (q.get("d") || "").split(".").filter(function(x){ return /^\d{6}$/.test(x); }).map(function(x){ return "20" + x.slice(0, 2) + "-" + x.slice(2, 4) + "-" + x.slice(4); });
     var W = ["일","월","화","수","목","금","토"];
     try { D = {ev: q.get("e"), kk: q.get("k"), c: q.get("c"), ds: ds, k: KL[q.get("k")] || q.get("k") || "", site: q.get("s") ? ub(q.get("s")) : "", to: q.get("n") ? ub(q.get("n")) : "",
-      days: ds.map(function(k){ var p = k.split("-"), d = new Date(+p[0], +p[1] - 1, +p[2]); return [(d.getMonth() + 1) + "/" + d.getDate(), W[d.getDay()], ""]; }), short: true}; } catch(_){ D = null; }
+      p: (q.get("p") || "").replace(/[^\d]/g, ""), days: ds.map(function(k){ var p = k.split("-"), d = new Date(+p[0], +p[1] - 1, +p[2]); return [(d.getMonth() + 1) + "/" + d.getDate(), W[d.getDay()], ""]; }), short: true}; } catch(_){ D = null; }
   } else { try { D = JSON.parse(ub(q.get("d"))); } catch(_){} }
   if (!D || !D.ev){ $("m").innerHTML = '<div class="done"><b>링크를 읽지 못했어요</b><p class="dim">받으신 문자의 링크를 다시 눌러 주세요.</p></div>'; return; }
   document.title = "904 " + (D.k || "") + " 회신";
@@ -123,10 +125,16 @@
     var txt = ["[" + D.k + " 외주 회신] " + label, "현장: " + D.site, "업체: " + (by || D.to || ""), "요청 일정: " + ((D.ds || []).map(mdw).join(", ") || "협의"), alt.length ? "가능한 날: " + alt.map(mdw).join(", ") : "", amount ? "예상 견적: " + amount.toLocaleString("ko-KR") + "원" : "", note ? "메모: " + note : ""].filter(Boolean).join("\n");
     fetch(SEND_TO, {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"},
       body: JSON.stringify({_subject: "[외주 회신] " + label + " · " + (by || D.to || "업체") + " · " + D.site + " · " + D.k, _template: "box", _captcha: "false", 회신: txt, data: "904OUT" + JSON.stringify(data) + "904END"})})
-      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || j.success === false || j.success === "false") throw 0; }); })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || j.success === false || j.success === "false") throw new Error(j.message || ("HTTP " + r.status)); }); })
       .then(function(){ try { localStorage.setItem(KEY, JSON.stringify({label: label, at: Date.now()})); } catch(_){}
-        $("m").innerHTML = '<div class="done"><b>회신 보냈어요</b><p>' + H(label) + (alt.length ? " · " + H(alt.map(mdw).join(", ")) : "") + '</p><p class="dim">904에서 확인하고 다시 연락드릴게요.<br>감사합니다.</p></div>'; window.scrollTo({top: 0}); })
-      .catch(function(){ sending = false; b.disabled = false; b.textContent = t0; toast("보내지 못했어요. 잠시 뒤 다시 눌러 주세요"); });
+        $("m").innerHTML = '<div class="done"><b>회신 보냈어요</b><p>' + H(label) + (alt.length ? " · " + H(alt.map(mdw).join(", ")) : "") + (amount ? " · " + amount.toLocaleString("ko-KR") + "원" : "") + '</p><p class="dim">904에서 확인하고 다시 연락드릴게요.<br>감사합니다.</p></div>'; window.scrollTo({top: 0}); })
+      .catch(function(err){ sending = false; b.disabled = false; b.textContent = "다시 보내기";
+        var ph = D.p || ((D.who || [])[0] || [])[1] || "", ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        var fb = $("fb") || document.createElement("div"); fb.id = "fb"; fb.className = "fb";
+        fb.innerHTML = '<b>회신이 전송되지 않았어요</b><small>' + H(String(err && err.message || "연결 문제")).slice(0, 120) + '</small>'
+          + (ph ? '<a class="send fbsms" href="sms:' + H(ph.replace(/[^\d]/g, "")) + (ios ? "&" : "?") + 'body=' + encodeURIComponent(txt) + '">💬 문자로 회신 보내기</a>' : '')
+          + '<small>문자로 보내도 904에서 똑같이 확인해요</small>';
+        b.after(fb); fb.scrollIntoView({behavior: "smooth", block: "nearest"}); });
   };
 })();
 </script>
