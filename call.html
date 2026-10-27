@@ -6,53 +6,117 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
 <title>904 전화 걸기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;800&family=Poppins:wght@600;800&display=swap">
 <style>
   :root{--bg:#f4f6f5;--fg:#1b1f1d;--muted:#66706b;--card:#fff;--line:#dde3e0;--go:#1f5c3d;--go2:#2f7d4f}
   @media (prefers-color-scheme:dark){:root{--bg:#121514;--fg:#eef2f0;--muted:#9aa39f;--card:#1c2120;--line:#2c3331;--go:#2f7d4f;--go2:#3d9a63;color-scheme:dark}}
   *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.45 -apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-left,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px))}
-  main{width:100%;max-width:380px;display:grid;gap:14px;text-align:center}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font:500 16px/1.45 -apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;display:grid;place-items:center;padding:20px max(16px,env(safe-area-inset-left,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));-webkit-tap-highlight-color:transparent}
+  main{width:100%;max-width:400px;display:grid;gap:12px;text-align:center}
   .brand{font:800 13px/1 sans-serif;letter-spacing:2px;color:var(--muted)}
-  .who{font:800 22px/1.3 sans-serif}
-  .num{font:800 32px/1.2 sans-serif;letter-spacing:.5px;font-variant-numeric:tabular-nums;user-select:all;-webkit-user-select:all}
-  .go{display:grid;place-items:center;min-height:64px;border-radius:18px;background:var(--go);color:#fff;font:800 20px sans-serif;text-decoration:none}
-  .go:active{background:var(--go2)}
+  .who{font:800 21px/1.3 sans-serif}
+  .num{font:800 30px/1.2 sans-serif;letter-spacing:.5px;font-variant-numeric:tabular-nums;user-select:all;-webkit-user-select:all}
+  .go{display:grid;place-items:center;min-height:62px;border:0;border-radius:18px;background:var(--go);color:#fff;font:800 19px sans-serif;text-decoration:none;cursor:pointer;touch-action:manipulation}
+  .go:active,.sub:active{transform:scale(.98)}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .sub{display:grid;place-items:center;min-height:50px;border-radius:14px;background:var(--card);border:1px solid var(--line);color:var(--fg);font:700 15px sans-serif;text-decoration:none;cursor:pointer}
-  .hint{color:var(--muted);font-size:13.5px}
-  .msg{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-align:left;font-size:13.5px;white-space:pre-wrap;max-height:30vh;overflow:auto}
+  .sub{display:grid;place-items:center;min-height:50px;border-radius:14px;background:var(--card);border:1px solid var(--line);color:var(--fg);font:700 15px sans-serif;text-decoration:none;cursor:pointer;touch-action:manipulation}
+  .hint{margin:0;color:var(--muted);font-size:13.5px}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:92%;padding:11px 16px;border-radius:12px;background:#1b1f1d;color:#fff;font:700 14px sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  .prev{display:grid;justify-items:center}
+  .prev img{width:100%;max-width:360px;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.12);-webkit-touch-callout:default}
+  /* 요청서 카드 (캘린더와 같은 모양) */
+  .oc{width:360px;box-sizing:border-box;background:#fff;color:#1b1f1d;border-radius:16px;padding:18px 18px 14px;font:500 14px/1.45 "Noto Sans KR",sans-serif;display:grid;gap:12px;text-align:left}
+  .oc-top{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid #1b1f1d}
+  .oc-logo{width:38px;height:38px;object-fit:contain}
+  .oc-brand{display:grid;line-height:1.1}.oc-brand b{font:800 16px Poppins,"Noto Sans KR",sans-serif;letter-spacing:.5px}.oc-brand small{font:600 9.5px Poppins,sans-serif;letter-spacing:1.6px;color:#6b726e}
+  .oc-kind{margin-left:auto;padding:5px 10px;border-radius:999px;background:#1f5c3d;color:#fff;font:800 13px "Noto Sans KR",sans-serif;white-space:nowrap}
+  .oc-to{font:700 15px "Noto Sans KR",sans-serif}
+  .oc-sec{display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:start}
+  .oc-sec>i{font-style:normal;font:800 12px "Noto Sans KR",sans-serif;color:#1f5c3d;padding-top:2px;letter-spacing:.5px}
+  .oc-sec>div{min-width:0;overflow-wrap:anywhere}
+  .oc-site{font:800 16px "Noto Sans KR",sans-serif}.oc-addr,.oc-pw{color:#3d4441}.oc-pw{font-weight:700}
+  .oc-days{display:grid;gap:5px}.oc-day{display:flex;gap:8px;align-items:baseline;padding:7px 10px;border-radius:10px;background:#eef4f0}
+  .oc-day b{flex:none;font:800 15px Poppins,"Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums}.oc-day em{font-style:normal;font-weight:700;font-size:13px}.oc-day span{min-width:0;font-weight:600}
+  .oc-where{display:grid;gap:4px}.oc-where b{font-weight:800}.oc-where span{color:#3d4441}.oc-where small{display:block;color:#5b625e;font-size:12.5px}
+  .oc-body{display:grid;gap:3px}.oc-memo{margin-top:4px;padding:7px 10px;border-radius:10px;background:#fbf4e4;font-weight:600}
+  .oc-who>div{display:grid;gap:3px}.oc-who>div>div{display:flex;gap:8px}.oc-who b{font-weight:800;min-width:40px}.oc-who span{font-variant-numeric:tabular-nums;font-weight:600}
+  .oc-foot{padding-top:10px;border-top:1px solid #dfe5e1;font:600 9.5px Poppins,sans-serif;letter-spacing:1.2px;color:#8a918d;text-align:center}
+  #stage{position:fixed;left:-9999px;top:0}
 </style>
 </head>
 <body>
-<main>
+<main id="m">
   <div class="brand">90.4 BATH</div>
   <div class="who" id="who"></div>
   <div class="num" id="num"></div>
-  <a class="go" id="go" href="#">📞 전화 걸기</a>
-  <div class="row"><a class="sub" id="alt" href="#">💬 문자</a><button type="button" class="sub" id="cp">번호 복사</button></div>
-  <div class="msg" id="msg" hidden></div>
-  <p class="hint" id="hint">전화 앱이 자동으로 안 열리면 위 버튼을 눌러 주세요.<br>다 쓰면 이 창은 닫고 캘린더로 돌아가면 돼요.</p>
+  <div class="prev" id="prev" hidden></div>
+  <button type="button" class="go" id="go">📞 전화 걸기</button>
+  <div class="row" id="row"><button type="button" class="sub" id="alt">💬 문자</button><button type="button" class="sub" id="cp">번호 복사</button></div>
+  <button type="button" class="sub" id="share" hidden>📤 카톡 등으로 이미지 보내기</button>
+  <p class="hint" id="hint">전화 앱이 안 열리면 위 버튼을 눌러 주세요.<br>다 쓰면 이 창을 닫고 캘린더로 돌아가요.</p>
 </main>
+<div id="stage"></div>
+<div class="toast" id="toast" hidden></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function(){
-  var q = new URLSearchParams(location.search);
-  var n = String(q.get("n") || "").replace(/[^\d+]/g, "");
-  var mode = q.get("t") === "sms" ? "sms" : "tel";
-  var body = q.get("b") || "", name = q.get("nm") || "";
+  var q = new URLSearchParams(location.search), $ = function(id){ return document.getElementById(id); };
+  var n = String(q.get("n") || "").replace(/[^\d+]/g, ""), mode = q.get("t") || "tel", body = q.get("b") || "", name = q.get("nm") || "";
   var ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
-  var fmt = function(d){ if (/^02\d{7,8}$/.test(d)) return d.replace(/^(02)(\d{3,4})(\d{4})$/, "$1-$2-$3"); if (/^\d{10,11}$/.test(d)) return d.replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3"); return d; };
-  var tel = "tel:" + n, sms = "sms:" + n + (body ? (ios ? "&" : "?") + "body=" + encodeURIComponent(body) : "");
-  var $ = function(id){ return document.getElementById(id); };
-  if (!n){ $("who").textContent = "번호가 없어요"; $("go").hidden = true; document.querySelector(".row").hidden = true; $("hint").textContent = "캘린더에서 다시 눌러 주세요."; return; }
+  var fmt = function(d){ d = String(d || "").replace(/[^\d]/g, ""); if (/^02\d{7,8}$/.test(d)) return d.replace(/^(02)(\d{3,4})(\d{4})$/, "$1-$2-$3"); if (/^\d{10,11}$/.test(d)) return d.replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3"); return d; };
+  var smsUrl = function(t){ return "sms:" + n + (t ? (ios ? "&" : "?") + "body=" + encodeURIComponent(t) : ""); };
+  var go = function(u){ location.href = u; };
+  var T = 0, toast = function(t){ var x = $("toast"); x.textContent = t; x.hidden = false; clearTimeout(T); T = setTimeout(function(){ x.hidden = true; }, 2600); };
+  var H = function(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+  var copyText = function(t){ if (navigator.clipboard) return navigator.clipboard.writeText(t).then(function(){ return true; }, function(){ return false; }); return Promise.resolve(false); };
+
   $("who").textContent = name; $("num").textContent = fmt(n);
-  if (mode === "sms"){ $("go").textContent = "💬 문자 보내기"; $("go").href = sms; $("alt").textContent = "📞 전화"; $("alt").href = tel; if (body){ $("msg").textContent = body; $("msg").hidden = false; } $("hint").innerHTML = "문자 앱이 자동으로 안 열리면 위 버튼을 눌러 주세요.<br>요청서 이미지는 문자 창에서 붙여넣기 하면 돼요."; }
-  else { $("go").href = tel; $("alt").href = "sms:" + n; }
-  $("cp").addEventListener("click", function(){ var t = fmt(n), b = $("cp");
-    var done = function(ok){ b.textContent = ok ? "✓ 복사됨" : "길게 눌러 복사"; };
-    if (navigator.clipboard) navigator.clipboard.writeText(t).then(function(){ done(true); }, function(){ done(false); }); else done(false); });
-  // 열리자마자 바로 전화·문자 앱으로
-  setTimeout(function(){ location.href = mode === "sms" ? sms : tel; }, 150);
+  $("cp").onclick = function(){ copyText(fmt(n)).then(function(ok){ toast(ok ? "번호를 복사했어요" : "번호를 길게 눌러 복사하세요"); }); };
+
+  // ---- 외주 요청서: 이미지 만들어 두고 [이미지 복사 + 문자 열기] ----
+  if (mode === "req"){
+    var D = null; try { var s = (q.get("d") || "").replace(/-/g, "+").replace(/_/g, "/"); D = JSON.parse(decodeURIComponent(escape(atob(s)))); } catch(_){}
+    if (!D){ $("who").textContent = "요청서 내용을 못 읽었어요"; $("hint").textContent = "캘린더에서 다시 눌러 주세요."; $("go").hidden = $("row").hidden = true; return; }
+    document.title = "904 외주 요청서";
+    $("stage").innerHTML = '<div class="oc" id="card">'
+      + '<div class="oc-top"><img src="logo904.png" alt="" class="oc-logo"><div class="oc-brand"><b>90.4 BATH</b><small>INTERIOR DESIGN</small></div><span class="oc-kind">' + H(D.k) + ' 외주 요청</span></div>'
+      + (D.to ? '<div class="oc-to">' + H(D.to) + ' 사장님께</div>' : '')
+      + '<div class="oc-sec"><i>현장</i><div><b class="oc-site">' + H(D.site) + '</b>' + (D.addr ? '<div class="oc-addr">' + H(D.addr) + '</div>' : '') + (D.pw ? '<div class="oc-pw">비번 ' + H(D.pw) + '</div>' : '') + '</div></div>'
+      + '<div class="oc-sec"><i>일정</i><div class="oc-days">' + ((D.days || []).length ? D.days.map(function(x){ return '<div class="oc-day"><b>' + H(x[0]) + ' <em>(' + H(x[1]) + ')</em></b><span>' + H(x[2]) + '</span></div>'; }).join("") : '<div class="oc-day"><b>날짜 협의</b><span>통화로 정해요</span></div>') + '</div></div>'
+      + ((D.where || []).length ? '<div class="oc-sec"><i>위치</i><div class="oc-where">' + D.where.map(function(w){ return '<div><b>' + H(w[0]) + '</b>' + (w[1] ? ' <span>' + H(w[1]) + '</span>' : '') + (w[2] ? '<small>' + H(w[2]) + '</small>' : '') + '</div>'; }).join("") + '</div></div>' : '')
+      + ((D.body || []).length || D.memo ? '<div class="oc-sec"><i>내용</i><div class="oc-body">' + (D.body || []).map(function(l){ return '<div>' + H(l) + '</div>'; }).join("") + (D.memo ? '<div class="oc-memo">' + H(D.memo).replace(/\n/g, "<br>") + '</div>' : '') + '</div></div>' : '')
+      + ((D.who || []).length ? '<div class="oc-sec oc-who"><i>담당</i><div>' + D.who.map(function(w){ return '<div><b>' + H(w[0]) + '</b><span>' + H(fmt(w[1])) + '</span></div>'; }).join("") + '</div></div>' : '')
+      + '<div class="oc-foot">90.4 BATH INTERIOR DESIGN · WITH TILO X 楚越</div></div>';
+    $("go").textContent = "💬 이미지 붙여서 문자 보내기"; $("alt").textContent = "📞 전화"; $("share").hidden = false; $("prev").hidden = false;
+    $("prev").innerHTML = '<p class="hint">요청서 이미지 만드는 중…</p>';
+    $("hint").innerHTML = "문자 창이 열리면 입력칸을 <b>길게 눌러 붙여넣기</b> 하세요.<br>이미지를 길게 누르면 사진에 저장할 수도 있어요.";
+    var blob = null, file = null;
+    var ready = (document.fonts ? document.fonts.ready : Promise.resolve()).then(function(){
+      var im = document.querySelector("#card .oc-logo"); return im && !im.complete ? new Promise(function(r){ im.onload = im.onerror = r; }) : null;
+    }).then(function(){ return html2canvas($("card"), {scale: 2, backgroundColor: "#ffffff", logging: false}); })
+      .then(function(cv){ return new Promise(function(r){ cv.toBlob(function(b){ blob = b; file = new File([b], "외주요청서.png", {type: "image/png"}); var u = URL.createObjectURL(b); $("prev").innerHTML = '<img src="' + u + '" alt="외주 요청서">'; r(b); }, "image/png"); }); })
+      .catch(function(){ $("prev").innerHTML = '<p class="hint">이미지를 못 만들었어요. 문자로만 보낼 수 있어요.</p>'; });
+    var copyImg = function(){ // 누르자마자 클립보드에 (이미지가 아직이면 다 될 때까지 기다림)
+      try { if (!navigator.clipboard || !window.ClipboardItem) return Promise.resolve(false);
+        return navigator.clipboard.write([new ClipboardItem({"image/png": ready.then(function(){ if (!blob) throw 0; return blob; })})]).then(function(){ return true; }, function(){ return false; });
+      } catch(_){ return Promise.resolve(false); } };
+    $("go").onclick = function(){ var b = this; b.disabled = true;
+      copyImg().then(function(ok){ b.disabled = false;
+        if (ok){ toast("이미지 복사됨 · 문자 창에서 붙여넣기"); setTimeout(function(){ go(smsUrl("")); }, 350); }
+        else { toast("이미지 복사가 안 돼요 · 이미지를 길게 눌러 저장한 뒤 보내 주세요"); setTimeout(function(){ go(smsUrl(body)); }, 900); } }); };
+    $("alt").onclick = function(){ go("tel:" + n); };
+    $("share").onclick = function(){ ready.then(function(){
+      if (file && navigator.canShare && navigator.canShare({files: [file]})) return navigator.share({files: [file], title: "외주 요청서"}).catch(function(){});
+      toast("이 폰에서는 공유가 안 돼요 · 이미지를 길게 눌러 저장하세요"); }); };
+    return;
+  }
+
+  // ---- 전화·문자 ----
+  if (!n){ $("who").textContent = "번호가 없어요"; $("go").hidden = $("row").hidden = true; $("hint").textContent = "캘린더에서 다시 눌러 주세요."; return; }
+  if (mode === "sms"){ $("go").textContent = "💬 문자 보내기"; $("alt").textContent = "📞 전화";
+    $("go").onclick = function(){ go(smsUrl(body)); }; $("alt").onclick = function(){ go("tel:" + n); };
+    $("hint").textContent = "문자 앱이 안 열리면 위 버튼을 눌러 주세요."; setTimeout(function(){ go(smsUrl(body)); }, 100); }
+  else { $("go").onclick = function(){ go("tel:" + n); }; $("alt").onclick = function(){ go(smsUrl("")); }; setTimeout(function(){ go("tel:" + n); }, 100); }
 })();
 </script>
 </body>
