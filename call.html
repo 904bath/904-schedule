@@ -102,7 +102,7 @@
       } catch(_){ return Promise.resolve(false); } };
     var shareImg = function(){ // 폰 공유 창으로 이미지 그대로 → 메시지·카톡
       if (!file){ toast("이미지를 아직 만드는 중이에요 · 잠깐 뒤 다시 눌러 주세요"); return; }
-      if (navigator.canShare && navigator.canShare({files: [file]})){ copyText(fmt(n)); // 받는 사람 칸에 붙여넣기 쉽게 번호도 복사
+      if (navigator.canShare && navigator.canShare({files: [file]})){
         navigator.share({files: [file]}).then(function(){ toast("보냈어요"); }, function(e){ if (!e || e.name !== "AbortError") toast("공유가 안 돼요 · 아래 [이미지 복사하고 문자 창 열기]를 써 주세요"); }); return; }
       toast("이 브라우저는 공유가 안 돼요 · 아래 [이미지 복사하고 문자 창 열기]를 써 주세요"); };
     $("go").onclick = shareImg;
