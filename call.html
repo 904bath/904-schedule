@@ -92,7 +92,7 @@
     $("go").textContent = "💬 이미지 문자로 보내기"; $("alt").textContent = "📞 전화"; $("share").hidden = false; $("share").textContent = "이미지 복사하고 문자 창 열기"; $("prev").hidden = false;
     $("prev").innerHTML = '<p class="hint">요청서 이미지 만드는 중…</p>';
     $("hint").innerHTML = "공유 창에서 <b>메시지(문자)</b> 또는 <b>카카오톡</b>을 고르고, 받는 사람에 위 번호를 넣어 주세요.<br>이미지를 길게 누르면 사진에 저장할 수도 있어요.";
-    var REPLY = location.href.split("?")[0].replace(/call\.html$/, "reply.html") + "?d=" + q.get("d"); // 업체가 가능·불가·다른 날 회신하는 페이지
+    var REPLY = q.get("r") || (location.href.split("?")[0].replace(/call\.html$/, "reply.html") + "?d=" + q.get("d")); // 업체 회신 링크 (짧은 주소) // 업체가 가능·불가·다른 날 회신하는 페이지
     var blob = null, file = null;
     var ready = (document.fonts ? document.fonts.ready : Promise.resolve()).then(function(){
       var im = document.querySelector("#card .oc-logo"); return im && !im.complete ? new Promise(function(r){ im.onload = im.onerror = r; }) : null;

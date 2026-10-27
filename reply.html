@@ -40,6 +40,7 @@
   input,textarea{width:100%;font:600 16px var(--font);color:var(--fg);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 12px}
   .dates{display:grid;gap:6px}
   .dates .r{display:flex;gap:6px}.dates .r input{flex:1;min-width:0}.dates .r button{flex:none;width:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);font:700 18px var(--font)}
+  .won{position:relative;display:block}.won input{padding-right:40px;font-variant-numeric:tabular-nums}.won em{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--muted);font-weight:700}
   .add{justify-self:start;border:0;background:none;color:var(--go);font:700 14px var(--font);padding:4px 0;cursor:pointer}
   .send{min-height:58px;border:0;border-radius:16px;background:var(--go);color:#fff;font:800 18px var(--font);cursor:pointer;touch-action:manipulation}
   .send:disabled{opacity:.5}
@@ -62,7 +63,8 @@
   </div>
   <div class="more" id="more" hidden>
     <div class="dates" id="altBox" hidden><label for="alt0">가능한 날짜</label><div id="altList"></div><button type="button" class="add" id="addDate">+ 날짜 더 넣기</button></div>
-    <label for="note">하실 말씀 <span class="dim" style="font-weight:500">(안 적어도 돼요)</span><textarea id="note" rows="2" placeholder="예: 오후에 가능해요, 8시 반 도착"></textarea></label>
+    <label for="amt" id="amtBox">예상 견적 금액 <span class="dim" style="font-weight:500">(알면 적어 주세요)</span><span class="won"><input id="amt" inputmode="numeric" placeholder="예: 350,000" autocomplete="off"><em>원</em></span></label>
+    <label for="note">메모 <span class="dim" style="font-weight:500">(안 적어도 돼요)</span><textarea id="note" rows="3" placeholder="예: 오후에 가능해요, 자재는 저희가 가져가요"></textarea></label>
     <label for="by">보내는 분<input id="by" autocomplete="name"></label>
     <button type="button" class="send" id="send">회신 보내기</button>
   </div>
@@ -76,7 +78,14 @@
   var fmt = function(d){ d = String(d || "").replace(/[^\d]/g, ""); if (/^\d{10,11}$/.test(d)) return d.replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3"); return d; };
   var T = 0, toast = function(t){ var x = $("toast"); x.textContent = t; x.hidden = false; clearTimeout(T); T = setTimeout(function(){ x.hidden = true; }, 2800); };
   var q = new URLSearchParams(location.search), D = null;
-  try { var s = (q.get("d") || "").replace(/-/g, "+").replace(/_/g, "/"); D = JSON.parse(decodeURIComponent(escape(atob(s)))); } catch(_){}
+  var ub = function(s){ return decodeURIComponent(escape(atob(String(s || "").replace(/-/g, "+").replace(/_/g, "/")))); };
+  if (q.get("e")){ // 짧은 링크: e=일정 k=공정 d=날짜(YYMMDD.YYMMDD) c=확인코드 s=현장(b64) n=업체(b64)
+    var KL = {prot:"보양",demo:"철거",plumb:"설비",elec:"전기",wp:"방수",tile:"타일",sani:"도기 세팅",dome:"돔천장",sil:"실리콘",etc:"기타"};
+    var ds = (q.get("d") || "").split(".").filter(function(x){ return /^\d{6}$/.test(x); }).map(function(x){ return "20" + x.slice(0, 2) + "-" + x.slice(2, 4) + "-" + x.slice(4); });
+    var W = ["일","월","화","수","목","금","토"];
+    try { D = {ev: q.get("e"), kk: q.get("k"), c: q.get("c"), ds: ds, k: KL[q.get("k")] || q.get("k") || "", site: q.get("s") ? ub(q.get("s")) : "", to: q.get("n") ? ub(q.get("n")) : "",
+      days: ds.map(function(k){ var p = k.split("-"), d = new Date(+p[0], +p[1] - 1, +p[2]); return [(d.getMonth() + 1) + "/" + d.getDate(), W[d.getDay()], ""]; }), short: true}; } catch(_){ D = null; }
+  } else { try { D = JSON.parse(ub(q.get("d"))); } catch(_){} }
   if (!D || !D.ev){ $("m").innerHTML = '<div class="done"><b>링크를 읽지 못했어요</b><p class="dim">받으신 문자의 링크를 다시 눌러 주세요.</p></div>'; return; }
   document.title = "904 " + (D.k || "") + " 회신";
   $("kind").textContent = (D.k || "") + " 외주 요청";
@@ -85,6 +94,7 @@
     + '<div class="sec"><i>일정</i><div class="days">' + ((D.days || []).length ? D.days.map(function(x){ return '<div class="day"><b>' + H(x[0]) + ' <em>(' + H(x[1]) + ')</em></b><span>' + H(x[2]) + '</span></div>'; }).join("") : '<div class="day"><b>날짜 협의</b></div>') + '</div></div>'
     + ((D.where || []).length ? '<div class="sec"><i>위치</i><div>' + D.where.map(function(w){ return '<div><b>' + H(w[0]) + '</b>' + (w[1] ? ' <span class="dim">' + H(w[1]) + '</span>' : '') + (w[2] ? '<div class="dim" style="font-size:13px">' + H(w[2]) + '</div>' : '') + '</div>'; }).join("") + '</div></div>' : '')
     + ((D.body || []).length || D.memo ? '<div class="sec"><i>내용</i><div>' + (D.body || []).map(function(l){ return '<div>' + H(l) + '</div>'; }).join("") + (D.memo ? '<div class="memo">' + H(D.memo).replace(/\n/g, "<br>") + '</div>' : '') + '</div></div>' : '')
+    + (D.short ? '<div class="sec"><i>내용</i><div class="dim">받으신 요청서 이미지를 봐 주세요</div></div>' : '')
     + ((D.who || []).length ? '<div class="sec who"><i>담당</i><div>' + D.who.map(function(w){ return '<div><b>' + H(w[0]) + '</b><a href="tel:' + H(String(w[1]).replace(/[^\d]/g, "")) + '">' + H(fmt(w[1])) + '</a></div>'; }).join("") + '</div></div>' : '');
   $("by").value = D.to || "";
 
@@ -95,9 +105,10 @@
     r.querySelector("button").onclick = function(){ if ($("altList").children.length > 1) r.remove(); else r.querySelector("input").value = ""; };
     $("altList").appendChild(r); };
   $("addDate").onclick = function(){ addDate(""); };
+  $("amt").addEventListener("input", function(){ var v = Number(this.value.replace(/[^\d]/g, "")) || 0; this.value = v ? v.toLocaleString("ko-KR") : ""; });
   $("ans").addEventListener("click", function(ev){ var b = ev.target.closest("button[data-a]"); if (!b) return; ans = b.dataset.a;
     [].forEach.call($("ans").children, function(x){ x.setAttribute("aria-pressed", String(x === b)); });
-    $("more").hidden = false; $("altBox").hidden = ans !== "alt"; if (ans === "alt" && !$("altList").children.length) addDate((D.ds || [])[0] || "");
+    $("more").hidden = false; $("altBox").hidden = ans !== "alt"; $("amtBox").hidden = ans === "no"; if (ans === "alt" && !$("altList").children.length) addDate((D.ds || [])[0] || "");
     $("send").textContent = ans === "ok" ? "가능하다고 회신하기" : ans === "no" ? "어렵다고 회신하기" : "이 날짜로 회신하기";
     setTimeout(function(){ $("more").scrollIntoView({behavior: "smooth", block: "nearest"}); }, 50); });
   var WD = ["일","월","화","수","목","금","토"], mdw = function(k){ var p = k.split("-"), d = new Date(+p[0], +p[1] - 1, +p[2]); return (d.getMonth() + 1) + "/" + d.getDate() + "(" + WD[d.getDay()] + ")"; };
@@ -107,9 +118,9 @@
     var alt = ans === "alt" ? [].map.call($("altList").querySelectorAll("input"), function(i){ return i.value; }).filter(Boolean).sort() : [];
     if (ans === "alt" && !alt.length){ toast("가능한 날짜를 골라 주세요"); return; }
     if (sending) return; sending = true; var b = $("send"); b.disabled = true; var t0 = b.textContent; b.textContent = "보내는 중…";
-    var label = ans === "ok" ? "가능" : ans === "no" ? "불가능" : "다른 날 가능", note = $("note").value.trim(), by = $("by").value.trim();
-    var data = {v: 1, t: "outreply", ev: D.ev, kk: D.kk, c: D.c, ds: D.ds || [], ans: ans, alt: alt, note: note, by: by, vendor: D.to || "", site: D.site || "", k: D.k || "", at: new Date().toISOString()};
-    var txt = ["[" + D.k + " 외주 회신] " + label, "현장: " + D.site, "업체: " + (by || D.to || ""), "요청 일정: " + ((D.ds || []).map(mdw).join(", ") || "협의"), alt.length ? "가능한 날: " + alt.map(mdw).join(", ") : "", note ? "말씀: " + note : ""].filter(Boolean).join("\n");
+    var label = ans === "ok" ? "가능" : ans === "no" ? "불가능" : "다른 날 가능", note = $("note").value.trim(), by = $("by").value.trim(), amount = ans === "no" ? 0 : (Number(String($("amt").value).replace(/[^\d]/g, "")) || 0);
+    var data = {v: 1, t: "outreply", ev: D.ev, kk: D.kk, c: D.c, ds: D.ds || [], ans: ans, alt: alt, amount: amount, note: note, by: by, vendor: D.to || "", site: D.site || "", k: D.k || "", at: new Date().toISOString()};
+    var txt = ["[" + D.k + " 외주 회신] " + label, "현장: " + D.site, "업체: " + (by || D.to || ""), "요청 일정: " + ((D.ds || []).map(mdw).join(", ") || "협의"), alt.length ? "가능한 날: " + alt.map(mdw).join(", ") : "", amount ? "예상 견적: " + amount.toLocaleString("ko-KR") + "원" : "", note ? "메모: " + note : ""].filter(Boolean).join("\n");
     fetch(SEND_TO, {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"},
       body: JSON.stringify({_subject: "[외주 회신] " + label + " · " + (by || D.to || "업체") + " · " + D.site + " · " + D.k, _template: "box", _captcha: "false", 회신: txt, data: "904OUT" + JSON.stringify(data) + "904END"})})
       .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || j.success === false || j.success === "false") throw 0; }); })
