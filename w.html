@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="strict-origin">
+<title>904 시공요청서</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;800&family=Poppins:wght@600;800&display=swap">
+<style>
+  :root{--bg:#f2f5f3;--fg:#1b1f1d;--muted:#66706b;--card:#fff;--line:#dde3e0;--go:#1f5c3d;--go-soft:#e6f0ea;--no:#b23a2f;--no-soft:#f8e7e4;--alt:#8a5a0f;--alt-soft:#fbf1dc;--font:"Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif}
+  @media (prefers-color-scheme:dark){:root{--bg:#111413;--fg:#eef2f0;--muted:#9aa39f;--card:#1b201e;--line:#2c3331;--go:#3d9a63;--go-soft:#1d3226;--no:#e0675b;--no-soft:#3a201d;--alt:#e2b45c;--alt-soft:#352b17;color-scheme:dark}}
+  *{box-sizing:border-box}[hidden]{display:none!important}
+  body{margin:0;background:var(--bg);color:var(--fg);font:500 15px/1.5 var(--font);padding:18px max(16px,env(safe-area-inset-left,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));-webkit-tap-highlight-color:transparent}
+  main{max-width:440px;margin:0 auto;display:grid;gap:14px}
+  .top{display:flex;align-items:center;gap:10px}
+  .top img{width:34px;height:34px;object-fit:contain}
+  .top b{font:800 16px Poppins,var(--font);letter-spacing:.5px}.top small{display:block;font:600 9.5px Poppins,sans-serif;letter-spacing:1.6px;color:var(--muted)}
+  .top .kind{margin-left:auto;padding:5px 10px;border-radius:999px;background:var(--go);color:#fff;font:800 13px var(--font);white-space:nowrap}
+  h1{margin:0;font:800 20px/1.35 var(--font);text-wrap:balance}
+  h2{margin:6px 0 0;font:800 13px var(--font);color:var(--go);letter-spacing:.5px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:12px}
+  .sec{display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:start}
+  .sec>i{font-style:normal;font:800 12px var(--font);color:var(--go);padding-top:2px;letter-spacing:.5px}
+  .sec>div{min-width:0;overflow-wrap:anywhere}
+  .site{font:800 17px var(--font)}.dim{color:var(--muted)}
+  .addr{font-weight:700}
+  .mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .mini a,.mini button{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--fg);font:700 13.5px var(--font);text-decoration:none;cursor:pointer}
+  .pw{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:8px;background:var(--alt-soft);font-weight:800}
+  .days{display:grid;gap:5px}.day{display:flex;gap:8px;align-items:baseline;padding:7px 10px;border-radius:10px;background:var(--go-soft)}
+  .day b{flex:none;font:800 15px Poppins,var(--font);font-variant-numeric:tabular-nums}.day em{font-style:normal;font-weight:700;font-size:13px}
+  .where{display:grid;gap:4px}.where b{font-weight:800}
+  .body{display:grid;gap:3px}
+  .memo{margin-top:4px;padding:7px 10px;border-radius:10px;background:var(--alt-soft)}
+  .who div{display:flex;gap:8px}.who b{min-width:40px}.who a{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:700}
+  .money{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:16px;border-radius:16px;background:var(--go);color:#fff}
+  .money span{font:700 14px var(--font);opacity:.9}.money b{font:800 26px Poppins,var(--font);font-variant-numeric:tabular-nums}
+  .money.none b{font-size:17px}
+  .step{display:grid;gap:10px}
+  .num{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:6px;border-radius:50%;background:var(--go);color:#fff;font:800 12px Poppins,sans-serif}
+  .big{display:flex;align-items:center;justify-content:center;gap:8px;min-height:58px;border-radius:16px;font:800 18px var(--font);text-decoration:none;cursor:pointer;touch-action:manipulation}
+  .photo{border:2px solid var(--go);background:var(--card);color:var(--go)}
+  .photo.did{background:var(--go-soft)}
+  .send{border:0;background:var(--go);color:#fff;width:100%}
+  .send:disabled{opacity:.5}
+  .big:focus-visible,.mini a:focus-visible,.mini button:focus-visible{outline:3px solid var(--go);outline-offset:2px}
+  label{display:grid;gap:5px;font:700 13px var(--font);color:var(--muted)}
+  input,textarea{width:100%;font:600 16px var(--font);color:var(--fg);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 12px}
+  .chk{display:flex;align-items:center;gap:8px;font:700 14px var(--font);color:var(--fg);cursor:pointer}.chk input{width:20px;height:20px;accent-color:var(--go)}
+  .won{position:relative;display:block}.won input{padding-right:40px;font-variant-numeric:tabular-nums}.won em{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--muted);font-weight:700}
+  .fb{display:grid;gap:8px;padding:12px;border-radius:14px;background:var(--no-soft);text-align:center}.fb b{font:800 15px var(--font);color:var(--no)}.fb small{color:var(--muted)}
+  .done{text-align:center;display:grid;gap:10px;padding:26px 14px}
+  .done b{font:800 22px var(--font)}
+  .foot{padding-top:10px;border-top:1px solid var(--line);font:600 9.5px Poppins,sans-serif;letter-spacing:1.2px;color:var(--muted);text-align:center}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:92%;padding:11px 16px;border-radius:12px;background:#1b1f1d;color:#fff;font:700 14px var(--font)}
+</style>
+</head>
+<body>
+<main id="m"><div class="done"><b>여는 중…</b></div></main>
+<div class="toast" id="toast" hidden></div>
+<script>
+(function(){
+  var SEND_TO = "https://formsubmit.co/ajax/904bath@gmail.com";
+  var PHOTO = "https://script.google.com/macros/s/AKfycbzVtr4vfcxwIGGOvoTbra4KuxkfQoHkoJrgDClQit4E_iqRiNy59-X6bSN0ovCG4jkQ/exec";
+  var $ = function(id){ return document.getElementById(id); };
+  var H = function(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+  var fmt = function(d){ d = String(d || "").replace(/[^\d]/g, ""); if (/^02\d{7,8}$/.test(d)) return d.replace(/^(02)(\d{3,4})(\d{4})$/, "$1-$2-$3"); if (/^\d{10,11}$/.test(d)) return d.replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3"); return d; };
+  var won = function(n){ return (Number(n) || 0).toLocaleString("ko-KR") + "원"; };
+  var T = 0, toast = function(t){ var x = $("toast"); x.textContent = t; x.hidden = false; clearTimeout(T); T = setTimeout(function(){ x.hidden = true; }, 2800); };
+  var ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  var copyText = function(t){ if (navigator.clipboard) return navigator.clipboard.writeText(t).then(function(){ return true; }, function(){ return false; }); return Promise.resolve(false); };
+  var today = function(){ var d = new Date(), p = function(n){ return String(n).padStart(2, "0"); }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); };
+  var W = ["일","월","화","수","목","금","토"], mdw = function(k){ var p = String(k).split("-"), d = new Date(+p[0], +p[1] - 1, +p[2]); return (d.getMonth() + 1) + "/" + d.getDate() + "(" + W[d.getDay()] + ")"; };
+
+  // 링크: ?w1~담당번호~압축데이터  (w0 = 압축 안 함) — & 없이 한 덩어리라 문자·카톡에서 안 잘림
+  var RAW = location.search.slice(1), P = RAW.split("~"), PH = String(P[1] || "").replace(/[^\d]/g, "");
+  function fail(msg){ $("m").innerHTML = '<div class="done"><b>' + H(msg) + '</b><p class="dim">받으신 문자의 링크를 다시 눌러 주세요.</p>'
+    + (PH ? '<a class="big send" href="tel:' + PH + '">📞 904에 전화하기</a>' : '') + '</div>'; }
+  function bytes(s){ var b = atob(String(s || "").replace(/-/g, "+").replace(/_/g, "/")), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+  function load(){
+    if (!/^w[01]$/.test(P[0]) || !P[2]) return Promise.reject(new Error("bad"));
+    var a = bytes(P[2]);
+    if (P[0] === "w0") return Promise.resolve(JSON.parse(new TextDecoder().decode(a)));
+    if (typeof DecompressionStream === "undefined") return Promise.reject(new Error("old"));
+    return new Response(new Blob([a]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text().then(JSON.parse);
+  }
+  load().then(show, function(e){ fail(e && e.message === "old" ? "이 휴대폰에서는 요청서를 열 수 없어요" : "링크를 읽지 못했어요"); });
+
+  function show(D){
+    if (!D || !D.ev){ fail("링크를 읽지 못했어요"); return; }
+    document.title = "904 " + (D.k || "") + " 시공요청서";
+    var KEY = "904work:" + D.ev + ":" + D.kk, st = {}; try { st = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(_){}
+    var save = function(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(_){} };
+    var ph1 = PH || ((D.who || [])[0] || [])[1] || "";
+    var photoUrl = PHOTO + "?site=" + encodeURIComponent(String(D.site || "").trim()) + "&date=" + today();
+    var mapUrl = D.addr ? "https://map.naver.com/p/search/" + encodeURIComponent(D.addr) : "";
+
+    $("m").innerHTML =
+      '<div class="top"><img src="logo904.png" alt=""><div><b>90.4 BATH</b><small>INTERIOR DESIGN</small></div><span class="kind">' + H(D.k) + ' 시공 요청</span></div>'
+      + '<h1>' + (D.to ? H(D.to) + " 사장님, " : "") + '아래 내용으로 시공 부탁드립니다</h1>'
+      + (st.paidReq ? '<div class="fb" style="background:var(--go-soft)"><b style="color:var(--go)">결제 요청을 보내셨어요</b><small>' + H(st.paidReq) + ' · 904에서 확인 후 입금해요</small></div>' : '')
+      + '<div class="card">'
+      +   '<div class="sec"><i>현장</i><div><div class="site">' + H(D.site) + '</div>'
+      +     (D.addr ? '<div class="addr">' + H(D.addr) + '</div><div class="mini"><a href="' + H(mapUrl) + '" target="_blank" rel="noopener">📍 지도 열기</a><button type="button" id="cpAddr">주소 복사</button></div>' : '<div class="dim">주소는 담당자에게 받아 주세요</div>')
+      +     (D.pw ? '<div class="pw">공동현관·현관 비번 ' + H(D.pw) + '</div>' : '') + '</div></div>'
+      +   '<div class="sec"><i>일정</i><div class="days">' + ((D.days || []).length ? D.days.map(function(x){ return '<div class="day"><b>' + H(x[0]) + ' <em>(' + H(x[1]) + ')</em></b><span>' + H(x[2]) + '</span></div>'; }).join("") : '<div class="day"><b>날짜 협의</b></div>') + '</div></div>'
+      +   ((D.where || []).length ? '<div class="sec"><i>위치</i><div class="where">' + D.where.map(function(w){ return '<div><b>' + H(w[0]) + '</b>' + (w[1] ? ' <span class="dim">' + H(w[1]) + '</span>' : '') + (w[2] ? '<div class="dim" style="font-size:13px">' + H(w[2]) + '</div>' : '') + '</div>'; }).join("") + '</div></div>' : '')
+      +   ((D.body || []).length || D.memo ? '<div class="sec"><i>내용</i><div class="body">' + (D.body || []).map(function(l){ return '<div>' + H(l) + '</div>'; }).join("") + (D.memo ? '<div class="memo">' + H(D.memo).replace(/\n/g, "<br>") + '</div>' : '') + '</div></div>' : '')
+      +   ((D.who || []).length ? '<div class="sec who"><i>담당</i><div>' + D.who.map(function(w){ return '<div><b>' + H(w[0]) + '</b><a href="tel:' + H(String(w[1]).replace(/[^\d]/g, "")) + '">' + H(fmt(w[1])) + '</a></div>'; }).join("") + '</div></div>' : '')
+      + '</div>'
+      + '<div class="money' + (D.amt ? '' : ' none') + '"><span>최종 금액</span><b>' + (D.amt ? H(won(D.amt)) : "통화로 정해요") + '</b></div>'
+      + '<h2>시공 끝나면</h2>'
+      + '<div class="card step">'
+      +   '<div><span class="num">1</span><b>완료 사진 올리기</b> <span class="dim" style="font-size:13px">사진·동영상 다 돼요</span></div>'
+      +   '<a class="big photo' + (st.photo ? ' did' : '') + '" id="photoBtn" href="' + H(photoUrl) + '" target="_blank" rel="noopener">📷 ' + (st.photo ? '사진 더 올리기' : '완료 사진 올리기') + '</a>'
+      +   '<div><span class="num">2</span><b>결제 요청</b></div>'
+      +   '<label class="chk"><input type="checkbox" id="chg"> 금액이 달라졌어요 <span class="dim" style="font-weight:500">(추가 작업 등)</span></label>'
+      +   '<div id="chgBox" hidden style="display:grid;gap:10px"><label for="amt">요청 금액<span class="won"><input id="amt" inputmode="numeric" autocomplete="off" placeholder="예: 380,000"><em>원</em></span></label></div>'
+      +   '<label for="note">메모 <span class="dim" style="font-weight:500">(입금 계좌, 추가 작업 내용 등)</span><textarea id="note" rows="3"></textarea></label>'
+      +   '<label for="by">보내는 분<input id="by" autocomplete="name"></label>'
+      +   '<button type="button" class="big send" id="send">💳 결제 요청하기</button>'
+      + '</div>'
+      + '<div class="foot">90.4 BATH INTERIOR DESIGN · WITH TILO X 楚越</div>';
+
+    $("by").value = st.by || D.to || "";
+    if (st.note) $("note").value = st.note;
+    if ($("cpAddr")) $("cpAddr").onclick = function(){ copyText(D.addr).then(function(ok){ toast(ok ? "주소를 복사했어요" : "주소를 길게 눌러 복사하세요"); }); };
+    $("photoBtn").addEventListener("click", function(){ st.photo = Date.now(); save(); var b = this; setTimeout(function(){ b.classList.add("did"); b.textContent = "📷 사진 더 올리기"; }, 400); });
+    $("chg").onchange = function(){ $("chgBox").hidden = !this.checked; if (this.checked){ if (!$("amt").value && D.amt) $("amt").value = Number(D.amt).toLocaleString("ko-KR"); $("amt").focus(); } };
+    $("amt").addEventListener("input", function(){ var v = Number(this.value.replace(/[^\d]/g, "")) || 0; this.value = v ? v.toLocaleString("ko-KR") : ""; });
+
+    var sending = false;
+    $("send").onclick = function(){
+      var amount = $("chg").checked ? (Number(String($("amt").value).replace(/[^\d]/g, "")) || 0) : (Number(D.amt) || 0);
+      if ($("chg").checked && !amount){ toast("요청 금액을 적어 주세요"); $("amt").focus(); return; }
+      if (!st.photo && !window.confirm("완료 사진을 아직 안 올리셨어요.\n사진 없이 결제 요청을 보낼까요?")) return;
+      if (sending) return; sending = true; var b = $("send"); b.disabled = true; b.textContent = "보내는 중…";
+      var note = $("note").value.trim(), by = $("by").value.trim();
+      st.by = by; st.note = note; save();
+      var data = {v: 1, t: "outpay", ev: D.ev, kk: D.kk, c: D.c, ds: D.ds || [], amount: amount, base: Number(D.amt) || 0, changed: !!$("chg").checked, photo: !!st.photo, note: note, by: by, vendor: D.to || "", site: D.site || "", k: D.k || "", at: new Date().toISOString()};
+      var txt = ["[" + D.k + " 외주 결제요청]", "현장: " + D.site, "업체: " + (by || D.to || ""), "일정: " + ((D.ds || []).map(mdw).join(", ") || "협의"), "요청 금액: " + (amount ? won(amount) : "통화로"), data.changed && D.amt ? "(요청서 금액 " + won(D.amt) + "에서 바뀜)" : "", "완료 사진: " + (st.photo ? "올림" : "안 올림"), note ? "메모: " + note : ""].filter(Boolean).join("\n");
+      fetch(SEND_TO, {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"},
+        body: JSON.stringify({_subject: "[외주 결제요청] " + (by || D.to || "업체") + " · " + D.site + " · " + D.k + " · " + (amount ? won(amount) : "금액 협의"), _template: "box", _captcha: "false", 결제요청: txt, data: "904PAY" + JSON.stringify(data) + "904END"})})
+        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || j.success === false || j.success === "false") throw new Error(j.message || ("HTTP " + r.status)); }); })
+        .then(function(){ st.paidReq = mdw(today()) + " · " + (amount ? won(amount) : "금액 협의"); save();
+          $("m").innerHTML = '<div class="done"><b>결제 요청 보냈어요</b><p>' + H(D.site) + ' · ' + H(D.k) + '<br><b style="font-size:20px">' + (amount ? H(won(amount)) : "금액 협의") + '</b></p><p class="dim">904에서 확인하고 입금해 드릴게요.<br>수고 많으셨습니다.</p>'
+            + '<a class="big photo" href="' + H(photoUrl) + '" target="_blank" rel="noopener">📷 사진 더 올리기</a></div>'; window.scrollTo({top: 0}); })
+        .catch(function(err){ sending = false; b.disabled = false; b.textContent = "다시 보내기";
+          var fb = $("fb") || document.createElement("div"); fb.id = "fb"; fb.className = "fb";
+          fb.innerHTML = '<b>결제 요청이 전송되지 않았어요</b><small>' + H(String(err && err.message || "연결 문제")).slice(0, 120) + '</small>'
+            + (ph1 ? '<a class="big send" href="sms:' + H(String(ph1).replace(/[^\d]/g, "")) + (ios ? "&" : "?") + 'body=' + encodeURIComponent(txt) + '">💬 문자로 결제 요청 보내기</a>' : '')
+            + '<small>문자로 보내도 904에서 똑같이 확인해요</small>';
+          b.after(fb); fb.scrollIntoView({behavior: "smooth", block: "nearest"}); });
+    };
+  }
+})();
+</script>
+</body>
+</html>
