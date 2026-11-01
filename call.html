@@ -126,7 +126,7 @@
     $("go").textContent = "짧은 링크 만드는 중…"; $("go").disabled = true;
     $("alt").textContent = "📋 문구 복사 (카톡)"; $("cp").textContent = "🔗 링크만 복사";
     $("hint").innerHTML = "카톡은 [문구 복사] 후 업체 방에 붙여넣기.<br>다 보내면 이 창을 닫고 캘린더로 돌아가요.";
-    var link = function(){ return SHORT || LONG; }, full = function(){ return body + "\n\n" + link(); };
+    var link = function(){ return SHORT || LONG; }, full = function(){ return body + "\n" + link(); };
     var done = function(s){ if (ready) return; ready = true; SHORT = s || ""; $("go").disabled = false;
       $("num").textContent = link().replace(/^https?:\/\//, ""); $("num").style.cssText = "font:700 16px/1.4 sans-serif;word-break:break-all;color:var(--go2)";
       if (n){ $("go").textContent = "💬 문자로 보내기"; $("go").onclick = function(){ go(smsUrl(full())); }; setTimeout(function(){ go(smsUrl(full())); }, 150); }
