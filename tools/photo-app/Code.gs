@@ -37,6 +37,7 @@ function doGet(e) {
   if (p.view === 'photos') {
     const g = HtmlService.createTemplateFromFile('Gallery');
     g.site = p.site ? clean_(p.site) : '';
+    g.solo = p.solo === '1'; // 업체에 보낼 땐 다른 현장 목록으로 못 가게
     let data = null, pre = {};
     try {
       data = g.site ? listPhotos(g.site) : listSites();
