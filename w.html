@@ -38,6 +38,11 @@
   .money span{font:700 14px var(--font);opacity:.9}.money b{font:800 26px Poppins,var(--font);font-variant-numeric:tabular-nums}
   .money.none b{font-size:17px}
   .step{display:grid;gap:10px}
+  .est{display:flex;justify-content:space-between;align-items:baseline;padding:12px 14px;border-radius:12px;background:var(--go-soft)}.est span{font:700 13.5px var(--font);color:var(--muted)}.est b{font:800 18px Poppins,var(--font);font-variant-numeric:tabular-nums}
+  .fin{position:relative;display:block;color:var(--fg)}.fin input{min-height:62px;padding:0 44px 0 16px;border:2.5px solid var(--go);border-radius:14px;font:800 26px Poppins,var(--font);font-variant-numeric:tabular-nums;text-align:right}.fin input:focus{outline:3px solid var(--go-soft)}
+  .fin .won em{right:16px;font-size:16px}.fin .fix{position:absolute;left:14px;top:-9px;padding:0 6px;background:var(--card);font:700 12px var(--font);color:var(--go)}
+  .quick{display:flex;flex-wrap:wrap;gap:6px}.quick button{min-height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--fg);font:700 14px var(--font);cursor:pointer}.quick button:last-child{margin-left:auto;color:var(--muted)}
+  .cmp{font:700 13.5px var(--font);color:var(--muted);min-height:1em}.cmp.up{color:var(--alt)}.cmp.down{color:var(--go)}.cmp.warn{color:var(--no)}
   .num{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:6px;border-radius:50%;background:var(--go);color:#fff;font:800 12px Poppins,sans-serif}
   .big{display:flex;align-items:center;justify-content:center;gap:8px;min-height:58px;border-radius:16px;font:800 18px var(--font);text-decoration:none;cursor:pointer;touch-action:manipulation}
   .photo{border:2px solid var(--go);background:var(--card);color:var(--go)}
@@ -109,16 +114,18 @@
       +   ((D.body || []).length || D.memo ? '<div class="sec"><i>내용</i><div class="body">' + (D.body || []).map(function(l){ return '<div>' + H(l) + '</div>'; }).join("") + (D.memo ? '<div class="memo">' + H(D.memo).replace(/\n/g, "<br>") + '</div>' : '') + '</div></div>' : '')
       +   ((D.who || []).length ? '<div class="sec who"><i>담당</i><div>' + D.who.map(function(w){ return '<div><b>' + H(w[0]) + '</b><a href="tel:' + H(String(w[1]).replace(/[^\d]/g, "")) + '">' + H(fmt(w[1])) + '</a></div>'; }).join("") + '</div></div>' : '')
       + '</div>'
-      + '<div class="money' + (D.amt ? '' : ' none') + '"><span>최종 금액</span><b>' + (D.amt ? H(won(D.amt)) : "통화로 정해요") + '</b></div>'
       + '<h2>시공 끝나면</h2>'
       + '<div class="card step">'
       +   '<div><span class="num">1</span><b>완료 사진 올리기</b> <span class="dim" style="font-size:13px">사진·동영상 다 돼요</span></div>'
       +   '<a class="big photo' + (st.photo ? ' did' : '') + '" id="photoBtn" href="' + H(photoUrl) + '" target="_blank" rel="noopener">📷 ' + (st.photo ? '사진 더 올리기' : '완료 사진 올리기') + '</a>'
-      +   '<div><span class="num">2</span><b>결제 요청</b></div>'
-      +   '<label class="chk"><input type="checkbox" id="chg"> 금액이 달라졌어요 <span class="dim" style="font-weight:500">(추가 작업 등)</span></label>'
-      +   '<div id="chgBox" hidden style="display:grid;gap:10px"><label for="amt">요청 금액<span class="won"><input id="amt" inputmode="numeric" autocomplete="off" placeholder="예: 380,000"><em>원</em></span></label></div>'
-      +   '<label for="note">메모 <span class="dim" style="font-weight:500">(입금 계좌, 추가 작업 내용 등)</span><textarea id="note" rows="3"></textarea></label>'
+      +   '<div class="est"><span>예상 견적</span><b>' + (D.amt ? H(won(D.amt)) : "통화로 정했어요") + '</b></div>'
+      +   '<div><span class="num">2</span><b>최종 견적 확인</b> <span class="dim" style="font-size:13px">추가 작업이 있으면 고쳐 주세요</span></div>'
+      +   '<label class="fin" for="amt"><span class="won"><input id="amt" inputmode="numeric" autocomplete="off" placeholder="금액 입력"><em>원</em></span><span class="fix">✏️ 눌러서 수정</span></label>'
+      +   '<div class="quick" id="quick"><button type="button" data-q="10000">+1만</button><button type="button" data-q="50000">+5만</button><button type="button" data-q="100000">+10만</button><button type="button" data-q="0">예상 견적대로</button></div>'
+      +   '<div class="cmp" id="cmp"></div>'
+      +   '<label for="note">메모 <span class="dim" style="font-weight:500">(추가 작업 내용, 입금 계좌 등)</span><textarea id="note" rows="3"></textarea></label>'
       +   '<label for="by">보내는 분<input id="by" autocomplete="name"></label>'
+      +   '<div><span class="num">3</span><b>결제 요청</b></div>'
       +   '<button type="button" class="big send" id="send">💳 결제 요청하기</button>'
       + '</div>'
       + '<div class="foot">90.4 BATH INTERIOR DESIGN · WITH TILO X 楚越</div>';
@@ -127,24 +134,34 @@
     if (st.note) $("note").value = st.note;
     if ($("cpAddr")) $("cpAddr").onclick = function(){ copyText(D.addr).then(function(ok){ toast(ok ? "주소를 복사했어요" : "주소를 길게 눌러 복사하세요"); }); };
     $("photoBtn").addEventListener("click", function(){ st.photo = Date.now(); save(); var b = this; setTimeout(function(){ b.classList.add("did"); b.textContent = "📷 사진 더 올리기"; }, 400); });
-    $("chg").onchange = function(){ $("chgBox").hidden = !this.checked; if (this.checked){ if (!$("amt").value && D.amt) $("amt").value = Number(D.amt).toLocaleString("ko-KR"); $("amt").focus(); } };
-    $("amt").addEventListener("input", function(){ var v = Number(this.value.replace(/[^\d]/g, "")) || 0; this.value = v ? v.toLocaleString("ko-KR") : ""; });
+    var amtOf = function(){ return Number(String($("amt").value).replace(/[^\d]/g, "")) || 0; };
+    var upd = function(){ var v = amtOf(), base = Number(D.amt) || 0, c = $("cmp");
+      if (!v){ c.textContent = "최종 견적을 적어 주세요"; c.className = "cmp warn"; }
+      else if (!base || v === base){ c.textContent = base ? "예상 견적과 같아요" : ""; c.className = "cmp"; }
+      else { c.textContent = "예상 견적보다 " + won(Math.abs(v - base)) + (v > base ? " 많아요 · 메모에 추가 작업을 적어 주세요" : " 적어요"); c.className = "cmp " + (v > base ? "up" : "down"); }
+      $("send").textContent = "💳 " + (v ? won(v) + " " : "") + "결제 요청하기"; };
+    $("amt").value = (st.amt || D.amt) ? Number(st.amt || D.amt).toLocaleString("ko-KR") : "";
+    $("amt").addEventListener("input", function(){ var v = Number(this.value.replace(/[^\d]/g, "")) || 0; this.value = v ? v.toLocaleString("ko-KR") : ""; upd(); });
+    $("amt").addEventListener("focus", function(){ var t = this; setTimeout(function(){ t.select(); }, 30); });
+    $("quick").onclick = function(ev){ var b = ev.target.closest("button"); if (!b) return; var q = +b.dataset.q;
+      var v = q ? amtOf() + q : (Number(D.amt) || 0); $("amt").value = v ? v.toLocaleString("ko-KR") : ""; upd(); };
+    upd();
 
     var sending = false;
     $("send").onclick = function(){
-      var amount = $("chg").checked ? (Number(String($("amt").value).replace(/[^\d]/g, "")) || 0) : (Number(D.amt) || 0);
-      if ($("chg").checked && !amount){ toast("요청 금액을 적어 주세요"); $("amt").focus(); return; }
+      var amount = amtOf();
+      if (!amount){ toast("최종 견적을 적어 주세요"); $("amt").focus(); return; }
       if (!st.photo && !window.confirm("완료 사진을 아직 안 올리셨어요.\n사진 없이 결제 요청을 보낼까요?")) return;
       if (sending) return; sending = true; var b = $("send"); b.disabled = true; b.textContent = "보내는 중…";
       var note = $("note").value.trim(), by = $("by").value.trim();
-      st.by = by; st.note = note; save();
-      var data = {v: 1, t: "outpay", ev: D.ev, kk: D.kk, c: D.c, ds: D.ds || [], amount: amount, base: Number(D.amt) || 0, changed: !!$("chg").checked, photo: !!st.photo, note: note, by: by, vendor: D.to || "", site: D.site || "", k: D.k || "", at: new Date().toISOString()};
-      var txt = ["[" + D.k + " 외주 결제요청]", "현장: " + D.site, "업체: " + (by || D.to || ""), "일정: " + ((D.ds || []).map(mdw).join(", ") || "협의"), "요청 금액: " + (amount ? won(amount) : "통화로"), data.changed && D.amt ? "(요청서 금액 " + won(D.amt) + "에서 바뀜)" : "", "완료 사진: " + (st.photo ? "올림" : "안 올림"), note ? "메모: " + note : ""].filter(Boolean).join("\n");
+      st.by = by; st.note = note; st.amt = amount; save();
+      var data = {v: 1, t: "outpay", ev: D.ev, kk: D.kk, c: D.c, ds: D.ds || [], amount: amount, base: Number(D.amt) || 0, changed: !!(D.amt && amount !== Number(D.amt)), photo: !!st.photo, note: note, by: by, vendor: D.to || "", site: D.site || "", k: D.k || "", at: new Date().toISOString()};
+      var txt = ["[" + D.k + " 외주 결제요청]", "현장: " + D.site, "업체: " + (by || D.to || ""), "일정: " + ((D.ds || []).map(mdw).join(", ") || "협의"), "최종 견적: " + won(amount), data.changed ? "(예상 견적 " + won(D.amt) + "에서 바뀜)" : "", "완료 사진: " + (st.photo ? "올림" : "안 올림"), note ? "메모: " + note : ""].filter(Boolean).join("\n");
       fetch(SEND_TO, {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"},
         body: JSON.stringify({_subject: "[외주 결제요청] " + (by || D.to || "업체") + " · " + D.site + " · " + D.k + " · " + (amount ? won(amount) : "금액 협의"), _template: "box", _captcha: "false", 결제요청: txt, data: "904PAY" + JSON.stringify(data) + "904END"})})
         .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || j.success === false || j.success === "false") throw new Error(j.message || ("HTTP " + r.status)); }); })
-        .then(function(){ st.paidReq = mdw(today()) + " · " + (amount ? won(amount) : "금액 협의"); save();
-          $("m").innerHTML = '<div class="done"><b>결제 요청 보냈어요</b><p>' + H(D.site) + ' · ' + H(D.k) + '<br><b style="font-size:20px">' + (amount ? H(won(amount)) : "금액 협의") + '</b></p><p class="dim">904에서 확인하고 입금해 드릴게요.<br>수고 많으셨습니다.</p>'
+        .then(function(){ st.paidReq = mdw(today()) + " · " + won(amount); save();
+          $("m").innerHTML = '<div class="done"><b>결제 요청 보냈어요</b><p>' + H(D.site) + ' · ' + H(D.k) + '<br><b style="font-size:20px">' + H(won(amount)) + '</b></p><p class="dim">904에서 확인하고 입금해 드릴게요.<br>수고 많으셨습니다.</p>'
             + '<a class="big photo" href="' + H(photoUrl) + '" target="_blank" rel="noopener">📷 사진 더 올리기</a></div>'; window.scrollTo({top: 0}); })
         .catch(function(err){ sending = false; b.disabled = false; b.textContent = "다시 보내기";
           var fb = $("fb") || document.createElement("div"); fb.id = "fb"; fb.className = "fb";
