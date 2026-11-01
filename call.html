@@ -120,8 +120,8 @@
   // ---- 시공요청서: 긴 링크를 짧게 줄여서 [문자 보내기] · [문구 복사] ----
   if (mode === "work"){
     var LONG = q.get("u") || "", SHORT = "", ready = false;
-    document.title = "904 시공요청서 보내기";
-    $("who").textContent = name ? name + " 사장님께" : "시공요청서 보내기"; $("num").textContent = n ? fmt(n) : "";
+    var TTL = q.get("ttl") || "시공요청서 보내기"; document.title = "904 " + TTL;
+    $("who").textContent = name ? name + " 사장님께" : TTL; $("num").textContent = n ? fmt(n) : "";
     $("num").style.fontSize = "22px";
     $("go").textContent = "짧은 링크 만드는 중…"; $("go").disabled = true;
     $("alt").textContent = "📋 문구 복사 (카톡)"; $("cp").textContent = "🔗 링크만 복사";
