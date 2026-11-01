@@ -135,14 +135,17 @@
       +   '<label class="fin" for="amt"><span class="won"><input id="amt" inputmode="numeric" autocomplete="off" placeholder="금액 입력"><em>원</em></span><span class="fix">✏️ 눌러서 수정</span></label>'
       +   '<div class="quick" id="quick"><button type="button" data-q="10000">+1만</button><button type="button" data-q="50000">+5만</button><button type="button" data-q="100000">+10만</button><button type="button" data-q="0">예상 견적대로</button></div>'
       +   '<div class="cmp" id="cmp"></div>'
-      +   '<label for="note">메모 <span class="dim" style="font-weight:500">(추가 작업 내용, 입금 계좌 등)</span><textarea id="note" rows="3"></textarea></label>'
-      +   '<label for="by">보내는 분<input id="by" autocomplete="name"></label>'
+      +   '<label for="by">업체 이름<input id="by" autocomplete="organization"></label>'
+      +   '<label for="acct">입금 계좌 <span class="dim" style="font-weight:500" id="acctHint">(은행 · 계좌번호 · 예금주)</span><input id="acct" autocomplete="off" placeholder="예: 국민 123456-01-234567 홍길동"></label>'
+      +   '<label for="note">메모 <span class="dim" style="font-weight:500">(추가 작업 내용 등, 안 적어도 돼요)</span><textarea id="note" rows="2"></textarea></label>'
       +   '<div><span class="num">3</span><b>결제 요청</b></div>'
       +   '<button type="button" class="big send" id="send">💳 결제 요청하기</button>'
       + '</div>'
       + '<div class="foot">90.4 BATH INTERIOR DESIGN · WITH TILO X 楚越</div>';
 
-    $("by").value = st.by || D.to || "";
+    $("by").value = st.by || D.vn || D.to || "";
+    $("acct").value = st.acct || D.acct || "";
+    if ($("acct").value) $("acctHint").textContent = "(지난번 계좌예요 · 바뀌었으면 고쳐 주세요)";
     if ($("pics")){ $("pfr").src = viewUrl; }
     if (st.note) $("note").value = st.note;
     if ($("cpAddr")) $("cpAddr").onclick = function(){ copyText(D.addr).then(function(ok){ toast(ok ? "주소를 복사했어요" : "주소를 길게 눌러 복사하세요"); }); };
@@ -166,10 +169,12 @@
       if (!amount){ toast("최종 견적을 적어 주세요"); $("amt").focus(); return; }
       if (!st.photo && !window.confirm("완료 사진을 아직 안 올리셨어요.\n사진 없이 결제 요청을 보낼까요?")) return;
       if (sending) return; sending = true; var b = $("send"); b.disabled = true; b.textContent = "보내는 중…";
-      var note = $("note").value.trim(), by = $("by").value.trim();
-      st.by = by; st.note = note; st.amt = amount; save();
-      var data = {v: 1, t: "outpay", ev: D.ev, kk: D.kk, c: D.c, ds: D.ds || [], amount: amount, base: Number(D.amt) || 0, changed: !!(D.amt && amount !== Number(D.amt)), photo: !!st.photo, note: note, by: by, vendor: D.to || "", site: D.site || "", k: D.k || "", at: new Date().toISOString()};
-      var txt = ["[" + D.k + " 외주 결제요청]", "현장: " + D.site, "업체: " + (by || D.to || ""), "일정: " + ((D.ds || []).map(mdw).join(", ") || "협의"), "최종 견적: " + won(amount), data.changed ? "(예상 견적 " + won(D.amt) + "에서 바뀜)" : "", "완료 사진: " + (st.photo ? "올림" : "안 올림"), note ? "메모: " + note : ""].filter(Boolean).join("\n");
+      var note = $("note").value.trim(), by = $("by").value.trim(), acct = $("acct").value.trim();
+      if (!by){ sending = false; b.disabled = false; upd(); toast("업체 이름을 적어 주세요"); $("by").focus(); return; }
+      if (!acct){ sending = false; b.disabled = false; upd(); toast("입금 계좌를 적어 주세요"); $("acct").focus(); return; }
+      st.by = by; st.acct = acct; st.note = note; st.amt = amount; save();
+      var data = {v: 1, t: "outpay", ev: D.ev, kk: D.kk, c: D.c, ds: D.ds || [], amount: amount, base: Number(D.amt) || 0, changed: !!(D.amt && amount !== Number(D.amt)), photo: !!st.photo, note: note, by: by, acct: acct, vendor: D.to || "", site: D.site || "", k: D.k || "", at: new Date().toISOString()};
+      var txt = ["[" + D.k + " 외주 결제요청]", "현장: " + D.site, "업체: " + (by || D.to || ""), "일정: " + ((D.ds || []).map(mdw).join(", ") || "협의"), "최종 견적: " + won(amount), data.changed ? "(예상 견적 " + won(D.amt) + "에서 바뀜)" : "", "입금 계좌: " + acct, "완료 사진: " + (st.photo ? "올림" : "안 올림"), note ? "메모: " + note : ""].filter(Boolean).join("\n");
       fetch(SEND_TO, {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"},
         body: JSON.stringify({_subject: "[외주 결제요청] " + (by || D.to || "업체") + " · " + D.site + " · " + D.k + " · " + (amount ? won(amount) : "금액 협의"), _template: "box", _captcha: "false", 결제요청: txt, data: "904PAY" + JSON.stringify(data) + "904END"})})
         .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || j.success === false || j.success === "false") throw new Error(j.message || ("HTTP " + r.status)); }); })
