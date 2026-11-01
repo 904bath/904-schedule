@@ -34,6 +34,9 @@
   .memo{padding:7px 10px;border-radius:10px;background:var(--alt-soft)}
   .who div{display:flex;gap:8px}.who b{min-width:40px}.who a{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:700}
   .q{font:800 16px var(--font);margin:4px 0 0}
+  .pics summary{cursor:pointer;font:800 16px var(--font);list-style:none;display:flex;align-items:baseline;gap:8px}.pics summary::-webkit-details-marker{display:none}.pics summary .dim{font:600 12.5px var(--font);margin-left:auto}
+  .pbox{height:420px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#fff}.pbox iframe{width:100%;height:100%;border:0}
+  .mini1{justify-self:end;color:var(--go);font:700 14px var(--font)}
   .ans{display:grid;gap:8px}
   .ans button{display:flex;align-items:center;gap:10px;min-height:58px;padding:0 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--fg);font:800 17px var(--font);text-align:left;cursor:pointer;touch-action:manipulation}
   .ans button small{margin-left:auto;font:600 12.5px var(--font);color:var(--muted)}
@@ -89,13 +92,13 @@
   var q = new URLSearchParams(location.search), D = null;
   var ub = function(s){ return decodeURIComponent(escape(atob(String(s || "").replace(/-/g, "+").replace(/_/g, "/")))); };
   var RAW = location.search.slice(1); // 한 덩어리 링크: ?v1~일정~공정~날짜,날짜~코드~현장~업체~번호 (& 없이 → 문자·카톡에서 안 잘림)
-  if (/^v1~/.test(RAW)){ var P = RAW.split("~"); q = new URLSearchParams(); q.set("e", decodeURIComponent(P[1] || "")); q.set("k", P[2] || ""); q.set("d", (P[3] || "").replace(/,/g, ".")); q.set("c", P[4] || ""); if (P[5]) q.set("s", P[5]); if (P[6]) q.set("n", P[6]); if (P[7]) q.set("p", P[7]); }
+  if (/^v1~/.test(RAW)){ var P = RAW.split("~"); q = new URLSearchParams(); q.set("e", decodeURIComponent(P[1] || "")); q.set("k", P[2] || ""); q.set("d", (P[3] || "").replace(/,/g, ".")); q.set("c", P[4] || ""); if (P[5]) q.set("s", P[5]); if (P[6]) q.set("n", P[6]); if (P[7]) q.set("p", P[7]); if (P[8]) q.set("f", P[8]); }
   if (q.get("e")){ // 짧은 링크: e=일정 k=공정 d=날짜(YYMMDD.YYMMDD) c=확인코드 s=현장(b64) n=업체(b64)
     var KL = {prot:"보양",demo:"철거",plumb:"설비",elec:"전기",wp:"방수",tile:"타일",sani:"도기 세팅",dome:"돔천장",sil:"실리콘",etc:"기타"};
     var ds = (q.get("d") || "").split(".").filter(function(x){ return /^\d{6}$/.test(x); }).map(function(x){ return "20" + x.slice(0, 2) + "-" + x.slice(2, 4) + "-" + x.slice(4); });
     var W = ["일","월","화","수","목","금","토"];
     try { D = {ev: q.get("e"), kk: q.get("k"), c: q.get("c"), ds: ds, k: KL[q.get("k")] || q.get("k") || "", site: q.get("s") ? ub(q.get("s")) : "", to: q.get("n") ? ub(q.get("n")) : "",
-      p: (q.get("p") || "").replace(/[^\d]/g, ""), days: ds.map(function(k){ var p = k.split("-"), d = new Date(+p[0], +p[1] - 1, +p[2]); return [(d.getMonth() + 1) + "/" + d.getDate(), W[d.getDay()], ""]; }), short: true}; } catch(_){ D = null; }
+      p: (q.get("p") || "").replace(/[^\d]/g, ""), f: q.get("f") ? ub(q.get("f")) : "", days: ds.map(function(k){ var p = k.split("-"), d = new Date(+p[0], +p[1] - 1, +p[2]); return [(d.getMonth() + 1) + "/" + d.getDate(), W[d.getDay()], ""]; }), short: true}; } catch(_){ D = null; }
   } else { try { D = JSON.parse(ub(q.get("d"))); } catch(_){} }
   if (!D || !D.ev){ $("m").innerHTML = '<div class="done"><b>링크를 읽지 못했어요</b><p class="dim">받으신 문자의 링크를 다시 눌러 주세요.</p></div>'; return; }
   document.title = "904 " + (D.k || "") + " 회신";
@@ -107,6 +110,12 @@
     + ((D.body || []).length || D.memo ? '<div class="sec"><i>내용</i><div>' + (D.body || []).map(function(l){ return '<div>' + H(l) + '</div>'; }).join("") + (D.memo ? '<div class="memo">' + H(D.memo).replace(/\n/g, "<br>") + '</div>' : '') + '</div></div>' : '')
     + (D.short ? '<div class="sec"><i>내용</i><div class="dim">받으신 문자 내용을 봐 주세요</div></div>' : '')
     + ((D.who || []).length ? '<div class="sec who"><i>담당</i><div>' + D.who.map(function(w){ return '<div><b>' + H(w[0]) + '</b><a href="tel:' + H(String(w[1]).replace(/[^\d]/g, "")) + '">' + H(fmt(w[1])) + '</a></div>'; }).join("") + '</div></div>' : '');
+  if (D.f){ // 현장 사진 (구글 드라이브 그 현장 폴더만)
+    var PV = "https://script.google.com/macros/s/AKfycbzVtr4vfcxwIGGOvoTbra4KuxkfQoHkoJrgDClQit4E_iqRiNy59-X6bSN0ovCG4jkQ/exec?view=photos&solo=1&site=" + encodeURIComponent(D.f);
+    var pc = document.createElement("details"); pc.className = "card pics";
+    pc.innerHTML = '<summary>📁 현장 사진 보기 <span class="dim">올라온 사진이 있으면 보여요</span></summary><div class="pbox"><iframe title="현장 사진" loading="lazy"></iframe></div><a class="mini1" href="' + H(PV) + '" target="_blank" rel="noopener">크게 보기 ↗</a>';
+    pc.addEventListener("toggle", function(){ var f = pc.querySelector("iframe"); if (pc.open && !f.src) f.src = PV; });
+    $("card").after(pc); }
   $("by").value = D.to || "";
 
   var KEY = "904reply:" + D.ev + ":" + D.kk + ":" + (D.ds || []).join(","), ans = "";
