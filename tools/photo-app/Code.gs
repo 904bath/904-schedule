@@ -2,6 +2,7 @@
 // 현장 없이 올린 사진은 「904 현장사진 / 미분류」 → 매일 밤 sortInbox()가 904 캘린더 일정과 맞춰서 옮김
 const ROOT_NAME = '904 현장사진';
 const INBOX_NAME = '미분류';
+const ATTACH_NAME = '첨부'; // 캘린더에서 외주 요청서에 직접 붙인 사진
 const DATA_URL = 'https://904bath.github.io/904-schedule/data.json';
 const TZ = 'Asia/Seoul';
 
@@ -34,8 +35,20 @@ const isDay_ = s => /^\d{4}-\d{2}-\d{2}$/.test(s || '');
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
+  if (p.view === 'photos' && p.ids) { // 외주 요청서·시공요청서에서 고른 사진만 (업체용)
+    const g = HtmlService.createTemplateFromFile('Gallery');
+    const ids = String(p.ids).split('.').filter(x => /^[\w-]{20,60}$/.test(x)).slice(0, 15);
+    const ok = ids.filter(id => { try { return inPick_(DriveApp.getFileById(id)); } catch (e) { return false; } });
+    allow_(ok);
+    g.site = '현장 사진'; g.solo = true; g.pick = true;
+    g.data = [{day: '', files: ok.map(id => ({id: id, v: false}))}];
+    try { g.pre = thumbs_(ok, true); } catch (e) { g.pre = {}; }
+    return g.evaluate().setTitle('904 현장 사진').addMetaTag('viewport', 'width=device-width, initial-scale=1')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
   if (p.view === 'photos') {
     const g = HtmlService.createTemplateFromFile('Gallery');
+    g.pick = false;
     g.site = p.site ? clean_(p.site) : '';
     g.solo = p.solo === '1'; // 업체에 보낼 땐 다른 현장 목록으로 못 가게
     let data = null, pre = {};
@@ -346,6 +359,12 @@ function cached_(key, fn) {
   const v = fn(), s = JSON.stringify(v);
   if (s.length < 95000) c.put(k, s, 1800);
   return v;
+}
+function inPick_(f) {
+  if (inSite_(f)) return true;
+  const root = getRoot_().getId(), ps = f.getParents();
+  while (ps.hasNext()) { const a = ps.next(); if (a.getName() !== ATTACH_NAME) continue; const pp = a.getParents(); while (pp.hasNext()) if (pp.next().getId() === root) return true; }
+  return false;
 }
 function allow_(ids) {
   if (!ids.length) return;

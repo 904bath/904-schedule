@@ -108,7 +108,8 @@
     var save = function(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(_){} };
     var ph1 = PH || ((D.who || [])[0] || [])[1] || "";
     var photoUrl = PHOTO + "?site=" + encodeURIComponent(String(D.site || "").trim()) + "&date=" + today();
-    var viewUrl = PHOTO + "?view=photos&solo=1&site=" + encodeURIComponent(String(D.site || "").trim());
+    var pics = (D.pics || []).filter(function(x){ return /^[\w-]{20,60}$/.test(x); });
+    var viewUrl = pics.length ? PHOTO + "?view=photos&ids=" + pics.join(".") : PHOTO + "?view=photos&solo=1&site=" + encodeURIComponent(String(D.site || "").trim());
     var mapUrl = D.addr ? "https://map.naver.com/p/search/" + encodeURIComponent(D.addr) : "";
 
     $("m").innerHTML =
@@ -124,7 +125,7 @@
       +   ((D.body || []).length || D.memo ? '<div class="sec"><i>내용</i><div class="body">' + (D.body || []).map(function(l){ return '<div>' + H(l) + '</div>'; }).join("") + (D.memo ? '<div class="memo">' + H(D.memo).replace(/\n/g, "<br>") + '</div>' : '') + '</div></div>' : '')
       +   ((D.who || []).length ? '<div class="sec who"><i>담당</i><div>' + D.who.map(function(w){ return '<div><b>' + H(w[0]) + '</b><a href="tel:' + H(String(w[1]).replace(/[^\d]/g, "")) + '">' + H(fmt(w[1])) + '</a></div>'; }).join("") + '</div></div>' : '')
       + '</div>'
-      + (D.ph ? '<details class="card pics" id="pics"><summary>📁 현장 사진 보기 <span class="dim">올라온 사진이 있으면 보여요</span></summary><div class="pbox"><iframe id="pfr" title="현장 사진" loading="lazy"></iframe></div><a class="mini1" href="' + H(viewUrl) + '" target="_blank" rel="noopener">크게 보기 ↗</a></details>' : '')
+      + (pics.length ? '<details class="card pics" id="pics" open><summary>📁 현장 사진 ' + pics.length + '장 <span class="dim">누르면 크게</span></summary><div class="pbox"><iframe id="pfr" title="현장 사진" loading="lazy"></iframe></div><a class="mini1" href="' + H(viewUrl) + '" target="_blank" rel="noopener">크게 보기 ↗</a></details>' : '')
       + '<h2>시공 끝나면</h2>'
       + '<div class="card step">'
       +   '<div><span class="num">1</span><b>완료 사진 올리기</b> <span class="dim" style="font-size:13px">사진·동영상 다 돼요</span></div>'
@@ -142,7 +143,7 @@
       + '<div class="foot">90.4 BATH INTERIOR DESIGN · WITH TILO X 楚越</div>';
 
     $("by").value = st.by || D.to || "";
-    if ($("pics")) $("pics").addEventListener("toggle", function(){ if (this.open && !$("pfr").src) $("pfr").src = viewUrl; });
+    if ($("pics")){ $("pfr").src = viewUrl; }
     if (st.note) $("note").value = st.note;
     if ($("cpAddr")) $("cpAddr").onclick = function(){ copyText(D.addr).then(function(ok){ toast(ok ? "주소를 복사했어요" : "주소를 길게 눌러 복사하세요"); }); };
     $("photoBtn").addEventListener("click", function(){ st.photo = Date.now(); save(); var b = this; setTimeout(function(){ b.classList.add("did"); b.textContent = "📷 사진 더 올리기"; }, 400); });

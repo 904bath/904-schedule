@@ -62,7 +62,8 @@
   var $ = function (id) { return document.getElementById(id); };
   $('ttl').textContent = SITE || '현장사진';
   $('up').href = APP + '?site=' + encodeURIComponent(SITE);
-  var SOLO = <?!= JSON.stringify(!!solo) ?>;
+  var SOLO = <?!= JSON.stringify(!!solo) ?>, PICK = <?!= JSON.stringify(!!pick) ?>;
+  if (PICK) { $('up').style.display = 'none'; }
   $('back').href = APP + '?view=photos'; $('back').hidden = !SITE || SOLO;
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function run(fn) { var a = [].slice.call(arguments, 1); return new Promise(function (ok, no) { var r = google.script.run.withSuccessHandler(ok).withFailureHandler(no); r[fn].apply(r, a); }); }
@@ -88,10 +89,10 @@
   }
   else (DATA ? Promise.resolve(DATA) : run('listPhotos', SITE)).then(function (days) {
     var n = days.reduce(function (s, d) { return s + d.files.length; }, 0);
-    $('sub').textContent = n ? '사진·동영상 ' + n + '개 · 날짜별' : '';
+    $('sub').textContent = n ? (PICK ? '사진 ' + n + '장 · 누르면 크게 보여요' : '사진·동영상 ' + n + '개 · 날짜별') : '';
     if (!n) { $('list').innerHTML = '<div class="empty">아직 올라온 사진이 없어요.<br>미분류로 올린 사진은 밤에 정리되면 여기 보여요.</div>'; return; }
     $('list').innerHTML = days.map(function (d) {
-      return '<h2>' + esc(d.day) + ' <small>' + d.files.length + '장</small></h2><div class="grid">' +
+      return (d.day ? '<h2>' + esc(d.day) + ' <small>' + d.files.length + '장</small></h2>' : '') + '<div class="grid">' +
         d.files.map(function (f) { return '<button type="button" data-id="' + esc(f.id) + '"' + (f.v ? ' data-v="1"' : '') + '><img alt="" data-src="' + esc(f.id) + '">' + (f.v ? '<span class="pl">▶</span>' : '') + '</button>'; }).join('') + '</div>';
     }).join('');
     lazy();
