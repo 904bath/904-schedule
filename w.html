@@ -107,9 +107,9 @@
     var KEY = "904work:" + D.ev + ":" + D.kk, st = {}; try { st = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(_){}
     var save = function(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(_){} };
     var ph1 = PH || ((D.who || [])[0] || [])[1] || "";
-    var photoUrl = PHOTO + "?site=" + encodeURIComponent(String(D.site || "").trim()) + "&date=" + today();
+    var photoUrl = PHOTO + "?site=" + encodeURIComponent(String(D.pf || D.site || "").trim()) + "&date=" + today();
     var pics = (D.pics || []).filter(function(x){ return /^[\w-]{20,60}$/.test(x); });
-    var viewUrl = pics.length ? PHOTO + "?view=photos&ids=" + pics.join(".") : PHOTO + "?view=photos&solo=1&site=" + encodeURIComponent(String(D.site || "").trim());
+    var viewUrl = pics.length ? PHOTO + "?view=photos&ids=" + pics.join(".") : PHOTO + "?view=photos&solo=1&site=" + encodeURIComponent(String(D.pf || D.site || "").trim());
     var mapUrl = D.addr ? "https://map.naver.com/p/search/" + encodeURIComponent(D.addr) : "";
 
     $("m").innerHTML =

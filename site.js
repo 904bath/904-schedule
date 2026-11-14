@@ -11,8 +11,10 @@ const SP_PART = {bath: ["젠다이", "조적 파티션", "폼세라믹 파티션
 const SP_EXTRA = {bath: ["졸리컷"], kitchen: ["졸리컷"], entry: ["걸레받이"], veranda: ["걸레받이"], floor: ["걸레받이"]};
 // 현장사진 업로드 (구글 드라이브 「904 현장사진 / 현장명 / 날짜」로 자동 정리)
 const PHOTO_APP = "https://script.google.com/macros/s/AKfycbzVtr4vfcxwIGGOvoTbra4KuxkfQoHkoJrgDClQit4E_iqRiNy59-X6bSN0ovCG4jkQ/exec";
+// 사진 폴더는 일정마다 하나: "MM.DD 현장이름" (같은 업체의 다른 현장 사진이 섞이지 않게)
+function photoFolderName(e){ const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(e?.start || ""), t = String(e?.title || "").trim(); return m ? `${m[2]}.${m[3]} ${t}` : t; }
 function photoUrl(e){ const d = new Date(), p = n => String(n).padStart(2, "0"), t = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-  return `${PHOTO_APP}?site=${encodeURIComponent((e.title || "").trim())}&date=${t}`; }
+  return `${PHOTO_APP}?site=${encodeURIComponent(photoFolderName(e))}&date=${t}`; }
 function openSite(id){
   const e0 = S.events.get(id); if (!e0) return;
   const e = structuredClone(e0); e.spaces = Array.isArray(e.spaces) ? e.spaces : [];

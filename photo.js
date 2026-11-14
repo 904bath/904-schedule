@@ -20,7 +20,7 @@
     if (dlg.querySelector(".s-photo") && dlg.querySelector(".s-view")) return;
     const e = cur(); if (!e || !String(e.title || "").trim()) return;
     const b = dlg.querySelector(".dl-b"); if (!b) return;
-    const view = `${PHOTO_APP}?view=photos&site=${encodeURIComponent(String(e.title).trim())}`;
+    const view = `${PHOTO_APP}?view=photos&site=${encodeURIComponent(typeof photoFolderName === "function" ? photoFolderName(e) : String(e.title).trim())}`;
     let up = dlg.querySelector(".s-photo");
     const row = document.createElement("div");
     row.className = "s-photorow"; row.style.cssText = "display:flex;gap:8px;margin:8px 0 10px";
